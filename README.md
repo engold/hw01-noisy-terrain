@@ -20,7 +20,8 @@ FBM Noise for terrain
   - For the color, I used Perlin noise to create a noisey color vector and then linearly interpolated (using mix) between the noisey color and a base color, sampled on the height from the height map.
  
  
-##GUI
+## GUI
+
 Added a slider for "Sea Level": the height of the ocean water
 
 - ranges from 0.45 to 3.0
