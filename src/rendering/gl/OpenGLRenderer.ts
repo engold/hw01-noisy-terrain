@@ -22,7 +22,8 @@ class OpenGLRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  render(camera: Camera, prog: ShaderProgram, drawables: Array<Drawable>) {
+  // added a paramter for hw1 height
+  render(camera: Camera, prog: ShaderProgram, height: number ,drawables: Array<Drawable>) {
     let model = mat4.create();
     let viewProj = mat4.create();
     let color = vec4.fromValues(1, 0, 0, 1);
@@ -31,6 +32,9 @@ class OpenGLRenderer {
     mat4.multiply(viewProj, camera.projectionMatrix, camera.viewMatrix);
     prog.setModelMatrix(model);
     prog.setViewProjMatrix(viewProj);
+
+    // add for hw1
+    prog.setHeightVar(height);
 
     for (let drawable of drawables) {
       prog.draw(drawable);

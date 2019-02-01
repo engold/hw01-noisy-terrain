@@ -13,6 +13,9 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
+  SeaLevel: 0.75, //added for hw1
+  //timeOfDay: 1, // added for hw1
+  GlacierHeight: 1, // added for hw1
 };
 
 let square: Square;
@@ -22,6 +25,8 @@ let aPressed: boolean;
 let sPressed: boolean;
 let dPressed: boolean;
 let planePos: vec2;
+
+let startVar: number = Date.now(); // for u_time
 
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
@@ -82,6 +87,12 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
+    //added for hw1
+gui.add(controls, 'SeaLevel', 0.45, 3.0).step(.025);
+gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
+//gui.add(controls, 'timeOfDay', 0, 10).step(1);
+
+
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -139,10 +150,23 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     processKeyPresses();
-    renderer.render(camera, lambert, [
+
+  // added for hw1 to turn on animating
+  //activate u_time or set it to 0
+  // if(controls["Activate Global Warming"] != false){
+  //    lambert.setUTime(Date.now() - startVar);
+  // }else{ // set time == 0
+  //     lambert.setUTime(0);
+  // }
+
+    // add for hw1 the u_HeightVar value to the shader
+    renderer.render(camera, lambert, controls.SeaLevel, [
       plane,
     ]);
-    renderer.render(camera, flat, [
+    // added or hw1, set glacierHeight
+    lambert.setGlacierHeightVar(controls.GlacierHeight);
+
+    renderer.render(camera, flat, controls.SeaLevel, [ // added for hw1
       square,
     ]);
     stats.end();

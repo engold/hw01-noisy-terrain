@@ -30,6 +30,9 @@ class ShaderProgram {
   unifViewProj: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
   unifPlanePos: WebGLUniformLocation;
+  unifHeightVar: WebGLUniformLocation;// added for hw1
+  unifGlacierHeight: WebGLUniformLocation;// added for hw1
+  unifTime: WebGLUniformLocation; // for u_Time
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -49,6 +52,9 @@ class ShaderProgram {
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifPlanePos   = gl.getUniformLocation(this.prog, "u_PlanePos");
+    this.unifHeightVar   = gl.getUniformLocation(this.prog, "u_HeightVar"); // added for hw1
+    this.unifGlacierHeight   = gl.getUniformLocation(this.prog, "u_GlacierHeight"); // added for hw1
+    this.unifTime   = gl.getUniformLocation(this.prog, "u_Time"); // added for hw1
   }
 
   use() {
@@ -57,6 +63,34 @@ class ShaderProgram {
       activeProgram = this.prog;
     }
   }
+
+//for hw1
+setHeightVar(height: number){
+  this.use();
+  if (this.unifHeightVar !== -1) {
+    gl.uniform1f(this.unifHeightVar, height);
+  }
+
+}
+
+//for hw1
+setGlacierHeightVar(height: number){
+  this.use();
+  if (this.unifGlacierHeight !== -1) {
+    gl.uniform1f(this.unifGlacierHeight, height);
+  }
+
+}
+
+// for u_Time
+setUTime(t: number){
+  this.use();
+  if (this.unifTime !== -1) {
+    gl.uniform1f(this.unifTime, t);
+  }
+
+}
+
 
   setModelMatrix(model: mat4) {
     this.use();
