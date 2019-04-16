@@ -12,7 +12,7 @@ out vec4 out_Col;
 
 void main() {
 
-
+vec3 col = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);;
 // regular background
-  out_Col = vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);
+  out_Col = vec4(col, 1.0);//vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);
 }

@@ -12,73 +12,58 @@ in vec4 fs_Nor;
 in vec4 fs_Col;
 
 in float fs_Sine;
-in float fs_height;
+in float index;
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
 
 
-// perlin noise from book of shaders: https://thebookofshaders.com/11/
-// 2D random function
-float randomFunc(vec2 inVal){
-
-return fract(sin(dot(inVal, vec2(12.9898, 78.233)))* 43758.5453123);
-
-}
-
-
-float noise (in vec2 st) {
-    vec2 i = floor(st);
-    vec2 f = fract(st);
-
-    // Four corners in 2D of a tile
-    float a = randomFunc(i);
-    float b = randomFunc(i + vec2(1.0, 0.0));
-    float c = randomFunc(i + vec2(0.0, 1.0));
-    float d = randomFunc(i + vec2(1.0, 1.0));
-
-    // Smooth Interpolation
-
-    // Cubic Hermine Curve.  Same as SmoothStep()
-    vec2 u = f*f*(3.0-2.0*f);
-    // u = smoothstep(0.,1.,f);
-
-    // Mix 4 coorners percentages
-    return mix(a, b, u.x) +
-            (c - a)* u.y * (1.0 - u.x) +
-            (d - b) * u.x * u.y;
-}
-
-
 void main()
 {
+    //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog
+    //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur
+    float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog
 
-//     float m;
-// if(u_Time == 0.0){
-//     m = 1.0;
-// }
-// else{
-//  m = min(sin(u_Time * .001), -1.0);
-// }
+    vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);
 
-
-
-    float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog
-    //out_Col = vec4(mix(vec3(0.5 * (fs_Sine + 1.0)), vec3(164.0 / 255.0, 233.0 / 255.0, 1.0), t), 1.0);
-float x = fs_Pos.x + u_PlanePos.x;
-float y = fs_Pos.z + u_PlanePos.y;
-
-float n = noise(vec2(x,y));
-
-vec3 col = vec3(n);
-vec3 orange = vec3(1.0, 0.6824, 0.0);
-
-vec3 finalCol = mix(orange, col, fs_height);
-
-
-out_Col = vec4(mix(finalCol, vec3(164.0 / 255.0, 233.0 / 255.0, 1.0), t), 1.0);
-//out_Col = vec4(mix(   mixedColor , vec3(164.0 / 255.0, 233.0 / 255.0, 1.0), t), 1.0);
-
-    // out_Col = vec4(mix(vec3(0.5 * (fs_Sine + 1.0)), vec3(164.0 / 255.0, 233.0 / 255.0, 1.0), t), 1.0);
+     // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);
+    // get around floating point error
+    if (index - 1.0 < 0.2) {
+        // sand hill color vec3(0.5608, 0.4392, 0.1059)
+            out_Col = vec4(mix(vec3(0.7608, 0.6588, 0.3804) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);
+    } 
+    else if (index - 2.0 < 0.2) {
+        // flat sand floor color
+        out_Col = vec4(mix(vec3(0.8863, 0.7176, 0.2902) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);
+    } 
+    else if (index - 3.0 < 0.2) {
+       // grassy area
+        //---------------------------------------------------------------------------------
+        // if(fs_Sine - 1.0 > 2.0){
+        //   out_Col = vec4(mix(vec3(1.0, 0.9647, 0.4784), fog_color, t), 1.0);
+        // }
+        // else{
+        out_Col = vec4(mix(vec3(0.0706, 0.3922, 0.1333)* 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);
+       // }
+    }
+     else if (index - 4.0 < 0.2) {
+         if (fs_Sine -1.0 >= 0.2) {
+            out_Col = vec4(mix(vec3(0.4667, 0.4667, 0.4667) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);
+        } else if (fs_Sine > 0.6) {
+            vec3 rock = vec3(0.3333, 0.3333, 0.3333); // good
+            vec3 rockBottom = vec3(0.2549, 0.2275, 0.0902); // good
+            vec3 temp = mix(rockBottom, rock, (fs_Sine - 0.6) / 0.4);
+            out_Col = vec4(mix(temp, fog_color, t), 1.0);
+        } else {
+            vec3 sand = vec3(193.0/255.0, 175.0/255.0, 94.0/255.0);
+            vec3 low = vec3(0.4784, 0.4078, 0.2235);
+            vec3 in_between = mix(low, sand, (fs_Sine - 0.4) / 0.6);
+            out_Col = vec4(mix(in_between, fog_color, t), 1.0);
+        }
+    }
+    else {
+        out_Col = vec4(mix(vec3(0.5 * (fs_Sine*0.15) + 0.1), fog_color, t), 1.0);
+    }
+    
+  
 }
-

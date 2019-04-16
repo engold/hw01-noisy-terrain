@@ -3,19 +3,22 @@ import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
 import Plane from './geometry/Plane';
+//import Mesh from './geometry/Mesh';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import {readTextFile} from './globals';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
-  SeaLevel: 0.75, //added for hw1
+  'Swim Speed' : 1.0,
+  //SeaLevel: 0.75, //added for hw1
   //timeOfDay: 1, // added for hw1
-  GlacierHeight: 1, // added for hw1
+ // GlacierHeight: 1, // added for hw1
 };
 
 let square: Square;
@@ -26,12 +29,18 @@ let sPressed: boolean;
 let dPressed: boolean;
 let planePos: vec2;
 
+let obj0: string = readTextFile('./src/geometry/wahoo.obj')
+
+let guiSpeed: number;
+let speed: number = 1.0;
+
 let startVar: number = Date.now(); // for u_time
 
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
-  plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(100,100), 20);
+  //                                                        100,100
+  plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(400,300), 20);
   plane.create();
 
   wPressed = false;
@@ -88,8 +97,9 @@ function main() {
   // Add controls to the gui
   const gui = new DAT.GUI();
     //added for hw1
-gui.add(controls, 'SeaLevel', 0.45, 3.0).step(.025);
-gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
+ gui.add(controls, 'Swim Speed', 1.0, 5.0).step(.1);
+//gui.add(controls, 'SeaLevel', 0.45, 3.0).step(.025);
+//gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
 //gui.add(controls, 'timeOfDay', 0, 10).step(1);
 
 
@@ -126,16 +136,20 @@ gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
   function processKeyPresses() {
     let velocity: vec2 = vec2.fromValues(0,0);
     if(wPressed) {
-      velocity[1] += 1.0;
+      //velocity[1] += 1.0;
+      velocity[1] += 0.5* speed;
     }
     if(aPressed) {
-      velocity[0] += 1.0;
+      //velocity[0] += 1.0;
+      velocity[0] += 0.5* speed;
     }
     if(sPressed) {
-      velocity[1] -= 1.0;
+     // velocity[1] -= 1.0;
+      velocity[1] -= 0.5* speed;
     }
     if(dPressed) {
-      velocity[0] -= 1.0;
+      //velocity[0] -= 1.0;
+      velocity[0] -= 0.5* speed;
     }
     let newPos: vec2 = vec2.fromValues(0,0);
     vec2.add(newPos, velocity, planePos);
@@ -149,6 +163,12 @@ gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
+
+    if (guiSpeed - controls["Swim Speed"] != 0){
+      guiSpeed = controls["Swim Speed"];
+      speed = controls["Swim Speed"];
+    }
+   
     processKeyPresses();
 
   // added for hw1 to turn on animating
@@ -159,14 +179,16 @@ gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
   //     lambert.setUTime(0);
   // }
 
-    // add for hw1 the u_HeightVar value to the shader
-    renderer.render(camera, lambert, controls.SeaLevel, [
+    lambert.setUTime(Date.now() - startVar);
+    flat.setUTime(Date.now() - startVar);
+    // add for hw1 
+    renderer.render(camera, lambert, .10, [
       plane,
     ]);
     // added or hw1, set glacierHeight
-    lambert.setGlacierHeightVar(controls.GlacierHeight);
+   // lambert.setGlacierHeightVar(controls.GlacierHeight);
 
-    renderer.render(camera, flat, controls.SeaLevel, [ // added for hw1
+    renderer.render(camera, flat, 1.0, [ // added for hw1
       square,
     ]);
     stats.end();
