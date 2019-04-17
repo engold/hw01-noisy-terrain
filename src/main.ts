@@ -3,6 +3,7 @@ import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
 import Plane from './geometry/Plane';
+import MyIcosphere from './geometry/MyIcosphere';
 //import Mesh from './geometry/Mesh';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
@@ -36,9 +37,55 @@ let speed: number = 1.0;
 
 let startVar: number = Date.now(); // for u_time
 
+// for drawing fish testing
+let testObj: MyIcosphere;
+
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
+
+ testObj = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 2.0, 5.0);
+ testObj.create();
+
+ let scale: number = 2.0;
+ let colorsList: number[] = [1.0, 0.0, 0.0, 1.0];
+ let c1Array: number[] = [scale, 0.0, 0.0, 0.0];
+ let c2Array: number[] = [0.0, scale, 0.0, 0.0];
+ let c3Array: number[] = [0.0, 0.0, scale, 0.0];
+ let c4Array: number[] = [0.0, 4.0,  0.0,  1.0]; // displacement
+ let col1Array: Float32Array = new Float32Array(c1Array);
+ let col2Array: Float32Array = new Float32Array(c2Array);
+ let col3Array: Float32Array = new Float32Array(c3Array);
+ let col4Array: Float32Array = new Float32Array(c4Array);
+ let colorArray: Float32Array = new Float32Array(colorsList);
+ testObj.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
+ testObj.setNumInstances(1);
+
+
+
+//  let offsetsArray = [];
+//   let colorsArray = [];
+//   let n: number = 100.0;
+//   for(let i = 0; i < n; i++) {
+//     for(let j = 0; j < n; j++) {
+//       offsetsArray.push(i);
+//       offsetsArray.push(j);
+//       offsetsArray.push(0);
+
+//       colorsArray.push(i / n);
+//       colorsArray.push(j / n);
+//       colorsArray.push(1.0);
+//       colorsArray.push(1.0); // Alpha channel
+//     }
+//   }
+//   let offsets: Float32Array = new Float32Array(offsetsArray);
+//   let colors: Float32Array = new Float32Array(colorsArray);
+//   testObj.setInstanceVBOs(offsets, colors);
+//   testObj.setNumInstances(n * n); // grid of "particles"
+
+
+
+
   //                                                        100,100
   plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(400,300), 20);
   plane.create();
@@ -132,6 +179,11 @@ function main() {
     new Shader(gl.VERTEX_SHADER, require('./shaders/flat-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
   ]);
+// for fish and plants
+  const instance = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/instanced-frag.glsl')),
+  ]);
 
   function processKeyPresses() {
     let velocity: vec2 = vec2.fromValues(0,0);
@@ -181,16 +233,19 @@ function main() {
 
     lambert.setUTime(Date.now() - startVar);
     flat.setUTime(Date.now() - startVar);
-    // add for hw1 
+    // draw the ground
     renderer.render(camera, lambert, .10, [
       plane,
     ]);
-    // added or hw1, set glacierHeight
-   // lambert.setGlacierHeightVar(controls.GlacierHeight);
-
+      // draw the blue background
     renderer.render(camera, flat, 1.0, [ // added for hw1
       square,
     ]);
+    // draw the instanced geometry
+    renderer.render(camera, instance, 1.0, [
+      testObj,
+    ]);
+
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

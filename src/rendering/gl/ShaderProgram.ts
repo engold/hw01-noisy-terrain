@@ -24,6 +24,12 @@ class ShaderProgram {
   attrPos: number;
   attrNor: number;
   attrCol: number;
+    // Added for HW4
+  // transform matrix columns
+  attrTransformC1: number;
+  attrTransformC2: number;
+  attrTransformC3: number;
+  attrTransformC4: number;
 
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
@@ -55,6 +61,11 @@ class ShaderProgram {
     this.unifHeightVar   = gl.getUniformLocation(this.prog, "u_HeightVar"); // added for hw1
     this.unifGlacierHeight   = gl.getUniformLocation(this.prog, "u_GlacierHeight"); // added for hw1
     this.unifTime   = gl.getUniformLocation(this.prog, "u_Time"); // added for hw1
+      // Added for HW4
+      this.attrTransformC1 = gl.getAttribLocation(this.prog, "vs_TransformC1");
+      this.attrTransformC2 = gl.getAttribLocation(this.prog, "vs_TransformC2");
+      this.attrTransformC3 = gl.getAttribLocation(this.prog, "vs_TransformC3");
+      this.attrTransformC4 = gl.getAttribLocation(this.prog, "vs_TransformC4");
   }
 
   use() {
@@ -132,12 +143,46 @@ setUTime(t: number){
       gl.enableVertexAttribArray(this.attrNor);
       gl.vertexAttribPointer(this.attrNor, 4, gl.FLOAT, false, 0, 0);
     }
+    if (this.attrCol != -1 && d.bindCol()) {
+      gl.enableVertexAttribArray(this.attrCol);
+      gl.vertexAttribPointer(this.attrCol, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrCol, 1);
+    }
+     // TODO: Set up attribute data for additional instanced rendering data as needed
+     if (this.attrTransformC1 != -1 && d.bindTransformC1()) {
+      gl.enableVertexAttribArray(this.attrTransformC1);
+      gl.vertexAttribPointer(this.attrTransformC1, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrTransformC1, 1); // Advance 1 index in VBO
+    }
+
+    if (this.attrTransformC2 != -1 && d.bindTransformC2()) {
+      gl.enableVertexAttribArray(this.attrTransformC2);
+      gl.vertexAttribPointer(this.attrTransformC2, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrTransformC2, 1); // Advance 1 index
+    }
+
+    if (this.attrTransformC3 != -1 && d.bindTransformC3()) {
+      gl.enableVertexAttribArray(this.attrTransformC3);
+      gl.vertexAttribPointer(this.attrTransformC3, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrTransformC3, 1); // Advance 1 index
+    }
+
+    if (this.attrTransformC4 != -1 && d.bindTransformC4()) {
+      gl.enableVertexAttribArray(this.attrTransformC4);
+      gl.vertexAttribPointer(this.attrTransformC4, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrTransformC4, 1); // Advance 1 index
+    }
 
     d.bindIdx();
     gl.drawElements(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0);
 
     if (this.attrPos != -1) gl.disableVertexAttribArray(this.attrPos);
     if (this.attrNor != -1) gl.disableVertexAttribArray(this.attrNor);
+     // Added for HW4
+     if (this.attrTransformC1 != -1) gl.disableVertexAttribArray(this.attrTransformC1);
+     if (this.attrTransformC2 != -1) gl.disableVertexAttribArray(this.attrTransformC2);
+     if (this.attrTransformC3 != -1) gl.disableVertexAttribArray(this.attrTransformC3);
+     if (this.attrTransformC4 != -1) gl.disableVertexAttribArray(this.attrTransformC4);
   }
 };
 
