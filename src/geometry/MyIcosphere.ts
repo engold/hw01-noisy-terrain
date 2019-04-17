@@ -20,6 +20,7 @@ class Icosphere extends Drawable {
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
   }
 
+
   create() {
     const X = 0.525731112119133606;
     const Z = 0.850650808352039932;

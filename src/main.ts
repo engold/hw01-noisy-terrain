@@ -4,7 +4,7 @@ import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
 import Plane from './geometry/Plane';
 import MyIcosphere from './geometry/MyIcosphere';
-//import Mesh from './geometry/Mesh';
+import Mesh from './geometry/Mesh';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
@@ -39,6 +39,7 @@ let startVar: number = Date.now(); // for u_time
 
 // for drawing fish testing
 let testObj: MyIcosphere;
+let mesh1: Mesh;
 
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
@@ -46,6 +47,10 @@ function loadScene() {
 
  testObj = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 2.0, 5.0);
  testObj.create();
+
+
+ mesh1 = new Mesh(obj0, vec3.fromValues(0.0, 0.0, 0.0));
+ mesh1.create();
 
  let scale: number = 2.0;
  let colorsList: number[] = [1.0, 0.0, 0.0, 1.0];
@@ -60,6 +65,9 @@ function loadScene() {
  let colorArray: Float32Array = new Float32Array(colorsList);
  testObj.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
  testObj.setNumInstances(1);
+
+ mesh1.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
+ mesh1.setNumInstances(1);
 
 
 
@@ -207,6 +215,9 @@ function main() {
     vec2.add(newPos, velocity, planePos);
     lambert.setPlanePos(newPos);
     planePos = newPos;
+
+    // update instanced geom here?? - I added this
+ 
   }
 
   // This function will be called every frame
@@ -244,6 +255,7 @@ function main() {
     // draw the instanced geometry
     renderer.render(camera, instance, 1.0, [
       testObj,
+      mesh1,
     ]);
 
     stats.end();
