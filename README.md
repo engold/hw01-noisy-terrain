@@ -5,7 +5,7 @@ pennKey: engold
 
 You need to zoom out intially because it starts too zoomed in.
 
-Link: https://engold.github.io/hw01-noisy-terrain
+Link: https://engold.github.io/566-final-project
 
 ## References
 - FBM from //https://thebookofshaders.com/13/
