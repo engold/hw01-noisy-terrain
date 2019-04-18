@@ -5,11 +5,11 @@ pennKey: engold
 
 You need to zoom out intially because it starts too zoomed in.
 
-Link: https://engold.github.io/566-final-project
+Link: https://engold.github.io/hw01-noisy-terrain
 
 ## References
 - FBM from //https://thebookofshaders.com/13/
-- Noise functions from Adam's lecture Slides
+- Noise functions from Adam's lecture Slides.
 - Shader axis rotate method http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
 - Jellyfish wave motion https://heliosinteractive.com/jelly-shader-part-2/
 
