@@ -22,9 +22,12 @@ void main()
 {
     //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog
     //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur
-    float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog
+    //float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog
+    float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog
+    // t*= 2.5; // extend the fog??
+  
 
-    vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);
+     vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);
 
      // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);
     // get around floating point error

@@ -30,7 +30,11 @@ float lightIntensity = diffuseTerm + ambientTerm;
 //out_Col = vec4(dist) * fs_Col;  
 //vec3(0.149, 0.4157, 0.7216);
 
-out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
+// output color passed in
+//out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
+vec3 col = vec3(0.8314, 0.1647, 1.0);
+
+out_Col = clamp(vec4(col * lightIntensity, 1.0), 0.0, 1.0);
 
 
 //out_Col = vec4(fs_Col.xyz, 1.0);

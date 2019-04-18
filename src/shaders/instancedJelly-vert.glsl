@@ -53,7 +53,7 @@ void main() {
     mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
     vec4 modifiedPos = rMat * vs_Pos;
 
-    modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down
+    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down
     float t = sin(u_Time * 0.0005);
     float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;
     
@@ -65,7 +65,9 @@ void main() {
 //     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?
 
     // jellyfish motion - waves down body
-   // modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;
+    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;
+    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion
+     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); 
 
     vec4 finalPos = overallTransforms * modifiedPos;
     gl_Position = u_ViewProj * finalPos;

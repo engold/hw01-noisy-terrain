@@ -30,7 +30,8 @@ let sPressed: boolean;
 let dPressed: boolean;
 let planePos: vec2;
 
-let obj0: string = readTextFile('./src/geometry/wahoo.obj')
+//let obj0: string = readTextFile('./src/geometry/wahoo.obj')
+let obj0: string = readTextFile('./src/geometry/smallFish_normals.obj')
 
 let guiSpeed: number;
 let speed: number = 1.0;
@@ -45,15 +46,15 @@ function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
 
- testObj = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 2.0, 5.0);
+ testObj = new MyIcosphere(vec3.fromValues(3.0, 3.0, 3.0), 1.0, 5.0);
  testObj.create();
 
 
- mesh1 = new Mesh(obj0, vec3.fromValues(0.0, 0.0, 0.0));
+ mesh1 = new Mesh(obj0, vec3.fromValues(0.0, 2.0, 0.0));
  mesh1.create();
 
  let scale: number = 2.0;
- let colorsList: number[] = [1.0, 0.0, 0.0, 1.0];
+ let colorsList: number[] = [0.9333, 0.3529, 0.1216, 1.0]; // orange
  let c1Array: number[] = [scale, 0.0, 0.0, 0.0];
  let c2Array: number[] = [0.0, scale, 0.0, 0.0];
  let c3Array: number[] = [0.0, 0.0, scale, 0.0];
@@ -68,8 +69,6 @@ function loadScene() {
 
  mesh1.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
  mesh1.setNumInstances(1);
-
-
 
 //  let offsetsArray = [];
 //   let colorsArray = [];
@@ -92,10 +91,8 @@ function loadScene() {
 //   testObj.setNumInstances(n * n); // grid of "particles"
 
 
-
-
   //                                                        100,100
-  plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(400,300), 20);
+  plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(600,300), 20);
   plane.create();
 
   wPressed = false;
@@ -153,11 +150,6 @@ function main() {
   const gui = new DAT.GUI();
     //added for hw1
  gui.add(controls, 'Swim Speed', 1.0, 5.0).step(.1);
-//gui.add(controls, 'SeaLevel', 0.45, 3.0).step(.025);
-//gui.add(controls, 'GlacierHeight', 1, 1.5).step(.05);
-//gui.add(controls, 'timeOfDay', 0, 10).step(1);
-
-
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -191,6 +183,10 @@ function main() {
   const instance = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/instanced-frag.glsl')),
+  ]);
+  const instanceJellyShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/instancedJelly-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/instancedJelly-frag.glsl')),
   ]);
 
   function processKeyPresses() {
@@ -234,18 +230,15 @@ function main() {
    
     processKeyPresses();
 
-  // added for hw1 to turn on animating
-  //activate u_time or set it to 0
-  // if(controls["Activate Global Warming"] != false){
-  //    lambert.setUTime(Date.now() - startVar);
-  // }else{ // set time == 0
-  //     lambert.setUTime(0);
-  // }
+    //console.log(camera.position); // camera pos doesnt move when mouse zooms out...
 
+    // set u_Time in the shaders
     lambert.setUTime(Date.now() - startVar);
     flat.setUTime(Date.now() - startVar);
-    // draw the ground
-    renderer.render(camera, lambert, .10, [
+    instance.setUTime(Date.now() - startVar);
+    instanceJellyShader.setUTime(Date.now() - startVar);
+    // draw the ground/terrain
+    renderer.render(camera, lambert, 1.0, [
       plane,
     ]);
       // draw the blue background
@@ -253,9 +246,15 @@ function main() {
       square,
     ]);
     // draw the instanced geometry
+    // draw small fish
     renderer.render(camera, instance, 1.0, [
-      testObj,
-      mesh1,
+     // testObj, // sphere
+      mesh1, // tiny fish
+    ]);
+    // draw jellyfish
+    renderer.render(camera, instanceJellyShader, 1.0, [
+      testObj // sphere
+  
     ]);
 
     stats.end();

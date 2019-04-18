@@ -9,7 +9,7 @@ class Camera {
   aspectRatio: number = 1;
   near: number = 0.1;
  // far: number = 1000;
-  far: number = 100000; // tried to double gow far I see in Z dir?
+  far: number = 200000; // tried to double gow far I see in Z dir?
   position: vec3 = vec3.create();
   direction: vec3 = vec3.create();
   target: vec3 = vec3.create();
