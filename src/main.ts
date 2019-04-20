@@ -42,6 +42,70 @@ let startVar: number = Date.now(); // for u_time
 let testObj: MyIcosphere;
 let mesh1: Mesh;
 
+function populateFormationlArray(textFilePath: string): any {
+  let theString: string = readTextFile(textFilePath);
+  var parsedArray = theString.split('\n');
+  let theArray: any = []; // array for the vec3s of instacned pos data
+  //console.log(parsedArray);
+  for (var i = 0; i < parsedArray.length; i ++){    
+    var newArray = parsedArray[i].split(/[ ,]+/);
+    //console.log(newArray);
+    theArray.push(parseFloat(newArray[0])); 
+    theArray.push(parseFloat(newArray[1])); 
+    theArray.push(parseFloat(newArray[2]));    
+  }
+  return theArray;
+}
+
+function setFishVBOs(theMesh: Mesh, formationData: any[]){
+  let colorsArray = []; 
+  let col1Array = []; 
+  let col2Array = []; 
+  let col3Array = []; 
+  let col4Array = [];  
+  let scale: number = 1.0;
+  let numInstances = formationData.length / 3.0;
+  let counter:number = 0;
+for(var i = 0; i < numInstances* 3.0; i +=3) {  
+  colorsArray.push(0.9333,); // r value
+  colorsArray.push(0.3529); // g
+  colorsArray.push( 0.1216); // b
+  colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+  // transform column 1
+  col1Array.push(scale);
+  col1Array.push(0.0);
+  col1Array.push(0.0);
+  col1Array.push(0.0);
+  // transform column 2
+  col2Array.push(0.0);
+  col2Array.push(scale);
+  col2Array.push(0.0);
+  col2Array.push(0.0);
+  // transform column 3
+  col3Array.push(0.0);
+  col3Array.push(0.0);
+  col3Array.push(scale);
+  col3Array.push(0.0);
+  // transform column 4
+  col4Array.push(formationData[i]); 
+  col4Array.push(5 + formationData[i+1] + Math.random()); // random val between 0 and 1 to offset height
+  col4Array.push(formationData[i+2]);
+  col4Array.push(1.0); 
+  
+  counter ++;
+}
+let col1: Float32Array = new Float32Array(col1Array);
+let col2: Float32Array = new Float32Array(col2Array);
+let col3: Float32Array = new Float32Array(col3Array);
+let col4: Float32Array = new Float32Array(col4Array);
+let colors: Float32Array = new Float32Array(colorsArray);
+console.log(col4Array);
+theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+theMesh.setNumInstances(counter); 
+}
+
+let formationArray: any = [];
+
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
@@ -49,10 +113,15 @@ function loadScene() {
  testObj = new MyIcosphere(vec3.fromValues(3.0, 3.0, 3.0), 1.0, 5.0);
  testObj.create();
 
+ formationArray = populateFormationlArray('./src/geometry/torus.txt');
 
+// tiny fish
  mesh1 = new Mesh(obj0, vec3.fromValues(0.0, 2.0, 0.0));
- mesh1.create();
+ mesh1.create(); 
+ setFishVBOs(mesh1, formationArray);
+// mesh1.setNumInstances(1); // for testing indiviual animation
 
+ // testing for jelly fish - color overwritten in jelly shader
  let scale: number = 2.0;
  let colorsList: number[] = [0.9333, 0.3529, 0.1216, 1.0]; // orange
  let c1Array: number[] = [scale, 0.0, 0.0, 0.0];
@@ -64,11 +133,9 @@ function loadScene() {
  let col3Array: Float32Array = new Float32Array(c3Array);
  let col4Array: Float32Array = new Float32Array(c4Array);
  let colorArray: Float32Array = new Float32Array(colorsList);
+ // the jelly fish
  testObj.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
  testObj.setNumInstances(1);
-
- mesh1.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
- mesh1.setNumInstances(1);
 
 //  let offsetsArray = [];
 //   let colorsArray = [];
@@ -87,8 +154,8 @@ function loadScene() {
 //   }
 //   let offsets: Float32Array = new Float32Array(offsetsArray);
 //   let colors: Float32Array = new Float32Array(colorsArray);
-//   testObj.setInstanceVBOs(offsets, colors);
-//   testObj.setNumInstances(n * n); // grid of "particles"
+//   mesh1.setInstanceVBOs(offsets, colors);
+//   mesh1.setNumInstances(n * n); // grid of "particles"
 
 
   //                                                        100,100
@@ -210,6 +277,10 @@ function main() {
     let newPos: vec2 = vec2.fromValues(0,0);
     vec2.add(newPos, velocity, planePos);
     lambert.setPlanePos(newPos);
+    //-------------------------
+    instance.setPlanePos(newPos);
+    instanceJellyShader.setPlanePos(newPos);
+    //---------------------------
     planePos = newPos;
 
     // update instanced geom here?? - I added this

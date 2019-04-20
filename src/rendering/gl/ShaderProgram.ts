@@ -24,6 +24,8 @@ class ShaderProgram {
   attrPos: number;
   attrNor: number;
   attrCol: number;
+  //attrTranslate: number;
+  //attrUv: number;
     // Added for HW4
   // transform matrix columns
   attrTransformC1: number;
@@ -54,6 +56,8 @@ class ShaderProgram {
     this.attrPos = gl.getAttribLocation(this.prog, "vs_Pos");
     this.attrNor = gl.getAttribLocation(this.prog, "vs_Nor");
     this.attrCol = gl.getAttribLocation(this.prog, "vs_Col");
+    //this.attrTranslate = gl.getAttribLocation(this.prog, "vs_Translate");
+    //this.attrUv = gl.getAttribLocation(this.prog, "vs_UV");
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
@@ -137,11 +141,13 @@ setUTime(t: number){
     if (this.attrPos != -1 && d.bindPos()) {
       gl.enableVertexAttribArray(this.attrPos);
       gl.vertexAttribPointer(this.attrPos, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrPos, 0); // advance one index in pos VBO for each vertex
     }
 
     if (this.attrNor != -1 && d.bindNor()) {
       gl.enableVertexAttribArray(this.attrNor);
       gl.vertexAttribPointer(this.attrNor, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrNor, 0);  // advance one index in nor VBO for each vertex
     }
     if (this.attrCol != -1 && d.bindCol()) {
       gl.enableVertexAttribArray(this.attrCol);
@@ -174,10 +180,12 @@ setUTime(t: number){
     }
 
     d.bindIdx();
+    gl.drawElementsInstanced(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0, d.numInstances);
     gl.drawElements(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0);
 
     if (this.attrPos != -1) gl.disableVertexAttribArray(this.attrPos);
     if (this.attrNor != -1) gl.disableVertexAttribArray(this.attrNor);
+    if (this.attrCol != -1) gl.disableVertexAttribArray(this.attrCol);
      // Added for HW4
      if (this.attrTransformC1 != -1) gl.disableVertexAttribArray(this.attrTransformC1);
      if (this.attrTransformC2 != -1) gl.disableVertexAttribArray(this.attrTransformC2);

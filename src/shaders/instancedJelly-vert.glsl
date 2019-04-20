@@ -5,6 +5,7 @@ uniform float u_Time;
 
 uniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)
 // gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;
+uniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane
 
 in vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place
 in vec4 vs_Nor; // Non-instanced, and presently unused

@@ -26,8 +26,11 @@ void main()
     float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog
     // t*= 2.5; // extend the fog??
   
+  vec3 c = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);
+  vec3 c2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);
+   vec3 fog_color = vec3(0.0706, 0.1529, 0.3804);
 
-     vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);
+    // vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);
 
      // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);
     // get around floating point error
