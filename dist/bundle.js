@@ -6117,13 +6117,78 @@ let startVar = Date.now(); // for u_time
 // for drawing fish testing
 let testObj;
 let mesh1;
+function populateFormationlArray(textFilePath) {
+    let theString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])(textFilePath);
+    var parsedArray = theString.split('\n');
+    let theArray = []; // array for the vec3s of instacned pos data
+    //console.log(parsedArray);
+    for (var i = 0; i < parsedArray.length; i++) {
+        var newArray = parsedArray[i].split(/[ ,]+/);
+        //console.log(newArray);
+        theArray.push(parseFloat(newArray[0]));
+        theArray.push(parseFloat(newArray[1]));
+        theArray.push(parseFloat(newArray[2]));
+    }
+    return theArray;
+}
+function setFishVBOs(theMesh, formationData) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 1.0;
+    let numInstances = formationData.length / 3.0;
+    let counter = 0;
+    for (var i = 0; i < numInstances * 3.0; i += 3) {
+        colorsArray.push(0.9333); // r value
+        colorsArray.push(0.3529); // g
+        colorsArray.push(0.1216); // b
+        colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+        // transform column 1
+        col1Array.push(scale);
+        col1Array.push(0.0);
+        col1Array.push(0.0);
+        col1Array.push(0.0);
+        // transform column 2
+        col2Array.push(0.0);
+        col2Array.push(scale);
+        col2Array.push(0.0);
+        col2Array.push(0.0);
+        // transform column 3
+        col3Array.push(0.0);
+        col3Array.push(0.0);
+        col3Array.push(scale);
+        col3Array.push(0.0);
+        // transform column 4
+        col4Array.push(formationData[i]);
+        col4Array.push(5 + formationData[i + 1] + Math.random()); // random val between 0 and 1 to offset height
+        col4Array.push(formationData[i + 2]);
+        col4Array.push(1.0);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
+    console.log(col4Array);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+let formationArray = [];
 function loadScene() {
     square = new __WEBPACK_IMPORTED_MODULE_3__geometry_Square__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0, 0, 0));
     square.create();
     testObj = new __WEBPACK_IMPORTED_MODULE_5__geometry_MyIcosphere__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(3.0, 3.0, 3.0), 1.0, 5.0);
     testObj.create();
+    formationArray = populateFormationlArray('./src/geometry/torus.txt');
+    // tiny fish
     mesh1 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](obj0, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
     mesh1.create();
+    setFishVBOs(mesh1, formationArray);
+    // mesh1.setNumInstances(1); // for testing indiviual animation
+    // testing for jelly fish - color overwritten in jelly shader
     let scale = 2.0;
     let colorsList = [0.9333, 0.3529, 0.1216, 1.0]; // orange
     let c1Array = [scale, 0.0, 0.0, 0.0];
@@ -6135,10 +6200,9 @@ function loadScene() {
     let col3Array = new Float32Array(c3Array);
     let col4Array = new Float32Array(c4Array);
     let colorArray = new Float32Array(colorsList);
+    // the jelly fish
     testObj.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
     testObj.setNumInstances(1);
-    mesh1.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
-    mesh1.setNumInstances(1);
     //  let offsetsArray = [];
     //   let colorsArray = [];
     //   let n: number = 100.0;
@@ -6155,8 +6219,8 @@ function loadScene() {
     //   }
     //   let offsets: Float32Array = new Float32Array(offsetsArray);
     //   let colors: Float32Array = new Float32Array(colorsArray);
-    //   testObj.setInstanceVBOs(offsets, colors);
-    //   testObj.setNumInstances(n * n); // grid of "particles"
+    //   mesh1.setInstanceVBOs(offsets, colors);
+    //   mesh1.setNumInstances(n * n); // grid of "particles"
     //                                                        100,100
     plane = new __WEBPACK_IMPORTED_MODULE_4__geometry_Plane__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0, 0, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec2 */].fromValues(600, 300), 20);
     plane.create();
@@ -6264,6 +6328,10 @@ function main() {
         let newPos = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec2 */].fromValues(0, 0);
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec2 */].add(newPos, velocity, planePos);
         lambert.setPlanePos(newPos);
+        //-------------------------
+        instance.setPlanePos(newPos);
+        instanceJellyShader.setPlanePos(newPos);
+        //---------------------------
         planePos = newPos;
         // update instanced geom here?? - I added this
     }
@@ -16898,6 +16966,8 @@ class ShaderProgram {
         this.attrPos = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getAttribLocation(this.prog, "vs_Pos");
         this.attrNor = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getAttribLocation(this.prog, "vs_Nor");
         this.attrCol = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getAttribLocation(this.prog, "vs_Col");
+        //this.attrTranslate = gl.getAttribLocation(this.prog, "vs_Translate");
+        //this.attrUv = gl.getAttribLocation(this.prog, "vs_UV");
         this.unifModel = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Model");
         this.unifModelInvTr = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_ModelInvTr");
         this.unifViewProj = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_ViewProj");
@@ -16967,10 +17037,12 @@ class ShaderProgram {
         if (this.attrPos != -1 && d.bindPos()) {
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].enableVertexAttribArray(this.attrPos);
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].vertexAttribPointer(this.attrPos, 4, __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].FLOAT, false, 0, 0);
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].vertexAttribDivisor(this.attrPos, 0); // advance one index in pos VBO for each vertex
         }
         if (this.attrNor != -1 && d.bindNor()) {
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].enableVertexAttribArray(this.attrNor);
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].vertexAttribPointer(this.attrNor, 4, __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].FLOAT, false, 0, 0);
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].vertexAttribDivisor(this.attrNor, 0); // advance one index in nor VBO for each vertex
         }
         if (this.attrCol != -1 && d.bindCol()) {
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].enableVertexAttribArray(this.attrCol);
@@ -16999,11 +17071,14 @@ class ShaderProgram {
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].vertexAttribDivisor(this.attrTransformC4, 1); // Advance 1 index
         }
         d.bindIdx();
+        __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].drawElementsInstanced(d.drawMode(), d.elemCount(), __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].UNSIGNED_INT, 0, d.numInstances);
         __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].drawElements(d.drawMode(), d.elemCount(), __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].UNSIGNED_INT, 0);
         if (this.attrPos != -1)
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].disableVertexAttribArray(this.attrPos);
         if (this.attrNor != -1)
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].disableVertexAttribArray(this.attrNor);
+        if (this.attrCol != -1)
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].disableVertexAttribArray(this.attrCol);
         // Added for HW4
         if (this.attrTransformC1 != -1)
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].disableVertexAttribArray(this.attrTransformC1);
@@ -17029,7 +17104,7 @@ module.exports = "#version 300 es\r\n\r\nuniform mat4 u_Model;\r\nuniform mat4 u
 /* 73 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nuniform float u_HeightVar;// added for hw1\r\nuniform float u_GlacierHeight;// added for hw1\r\nuniform float u_Time;// added for hw1\r\n\r\nin vec3 fs_Pos;\r\nin vec4 fs_Nor;\r\nin vec4 fs_Col;\r\n\r\nin float fs_Sine;\r\nin float index;\r\n\r\nout vec4 out_Col; // This is the final output color that you will see on your\r\n                  // screen for the pixel that is currently being processed.\r\n\r\n\r\nvoid main()\r\n{\r\n    //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\r\n    //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur\r\n    //float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    // t*= 2.5; // extend the fog??\r\n  \r\n\r\n     vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);\r\n\r\n     // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);\r\n    // get around floating point error\r\n    if (index - 1.0 < 0.2) {\r\n        // sand hill color vec3(0.5608, 0.4392, 0.1059)\r\n            out_Col = vec4(mix(vec3(0.7608, 0.6588, 0.3804) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 2.0 < 0.2) {\r\n        // flat sand floor color\r\n        out_Col = vec4(mix(vec3(0.8863, 0.7176, 0.2902) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 3.0 < 0.2) {\r\n       // grassy area\r\n        //---------------------------------------------------------------------------------\r\n        // if(fs_Sine - 1.0 > 2.0){\r\n        //   out_Col = vec4(mix(vec3(1.0, 0.9647, 0.4784), fog_color, t), 1.0);\r\n        // }\r\n        // else{\r\n        out_Col = vec4(mix(vec3(0.0706, 0.3922, 0.1333)* 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n       // }\r\n    }\r\n     else if (index - 4.0 < 0.2) {\r\n         if (fs_Sine -1.0 >= 0.2) {\r\n            out_Col = vec4(mix(vec3(0.4667, 0.4667, 0.4667) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n        } else if (fs_Sine > 0.6) {\r\n            vec3 rock = vec3(0.3333, 0.3333, 0.3333); // good\r\n            vec3 rockBottom = vec3(0.2549, 0.2275, 0.0902); // good\r\n            vec3 temp = mix(rockBottom, rock, (fs_Sine - 0.6) / 0.4);\r\n            out_Col = vec4(mix(temp, fog_color, t), 1.0);\r\n        } else {\r\n            vec3 sand = vec3(193.0/255.0, 175.0/255.0, 94.0/255.0);\r\n            vec3 low = vec3(0.4784, 0.4078, 0.2235);\r\n            vec3 in_between = mix(low, sand, (fs_Sine - 0.4) / 0.6);\r\n            out_Col = vec4(mix(in_between, fog_color, t), 1.0);\r\n        }\r\n    }\r\n    else {\r\n        out_Col = vec4(mix(vec3(0.5 * (fs_Sine*0.15) + 0.1), fog_color, t), 1.0);\r\n    }\r\n    \r\n  \r\n}"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nuniform float u_HeightVar;// added for hw1\r\nuniform float u_GlacierHeight;// added for hw1\r\nuniform float u_Time;// added for hw1\r\n\r\nin vec3 fs_Pos;\r\nin vec4 fs_Nor;\r\nin vec4 fs_Col;\r\n\r\nin float fs_Sine;\r\nin float index;\r\n\r\nout vec4 out_Col; // This is the final output color that you will see on your\r\n                  // screen for the pixel that is currently being processed.\r\n\r\n\r\nvoid main()\r\n{\r\n    //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\r\n    //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur\r\n    //float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    // t*= 2.5; // extend the fog??\r\n  \r\n  vec3 c = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\n  vec3 c2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n   vec3 fog_color = vec3(0.0706, 0.1529, 0.3804);\r\n\r\n    // vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);\r\n\r\n     // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);\r\n    // get around floating point error\r\n    if (index - 1.0 < 0.2) {\r\n        // sand hill color vec3(0.5608, 0.4392, 0.1059)\r\n            out_Col = vec4(mix(vec3(0.7608, 0.6588, 0.3804) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 2.0 < 0.2) {\r\n        // flat sand floor color\r\n        out_Col = vec4(mix(vec3(0.8863, 0.7176, 0.2902) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 3.0 < 0.2) {\r\n       // grassy area\r\n        //---------------------------------------------------------------------------------\r\n        // if(fs_Sine - 1.0 > 2.0){\r\n        //   out_Col = vec4(mix(vec3(1.0, 0.9647, 0.4784), fog_color, t), 1.0);\r\n        // }\r\n        // else{\r\n        out_Col = vec4(mix(vec3(0.0706, 0.3922, 0.1333)* 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n       // }\r\n    }\r\n     else if (index - 4.0 < 0.2) {\r\n         if (fs_Sine -1.0 >= 0.2) {\r\n            out_Col = vec4(mix(vec3(0.4667, 0.4667, 0.4667) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n        } else if (fs_Sine > 0.6) {\r\n            vec3 rock = vec3(0.3333, 0.3333, 0.3333); // good\r\n            vec3 rockBottom = vec3(0.2549, 0.2275, 0.0902); // good\r\n            vec3 temp = mix(rockBottom, rock, (fs_Sine - 0.6) / 0.4);\r\n            out_Col = vec4(mix(temp, fog_color, t), 1.0);\r\n        } else {\r\n            vec3 sand = vec3(193.0/255.0, 175.0/255.0, 94.0/255.0);\r\n            vec3 low = vec3(0.4784, 0.4078, 0.2235);\r\n            vec3 in_between = mix(low, sand, (fs_Sine - 0.4) / 0.6);\r\n            out_Col = vec4(mix(in_between, fog_color, t), 1.0);\r\n        }\r\n    }\r\n    else {\r\n        out_Col = vec4(mix(vec3(0.5 * (fs_Sine*0.15) + 0.1), fog_color, t), 1.0);\r\n    }\r\n    \r\n  \r\n}"
 
 /***/ }),
 /* 74 */
@@ -17041,13 +17116,13 @@ module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform float
 /* 75 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\n// The fragment shader used to render the background of the scene\r\n// Modify this to make your background more interesting\r\n\r\nuniform float u_HeightVar;// added for hw1, used as changing time var\r\nuniform float u_Time;\r\n\r\n\r\nout vec4 out_Col;\r\nin vec4 fs_Pos;\r\n\r\nvoid main() {\r\n\r\nvec3 col = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\nvec3 col2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n\r\n out_Col = vec4(mix(col, col2, fs_Pos.y), 1.0);\r\n// regular background\r\n // out_Col = vec4(col, 1.0);//vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);\r\n}\r\n"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\n// The fragment shader used to render the background of the scene\r\n// Modify this to make your background more interesting\r\n\r\nuniform float u_HeightVar;// added for hw1, used as changing time var\r\nuniform float u_Time;\r\n\r\n\r\nout vec4 out_Col;\r\nin vec4 fs_Pos;\r\n\r\nvoid main() {\r\n\r\nvec3 col = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\nvec3 col2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n\r\n out_Col = vec4(col, 1.0);//vec4(mix(col, col2, 0.35* fs_Pos.y), 1.0); // slight gradient in y dir\r\n// regular background\r\n // out_Col = vec4(col, 1.0);//vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);\r\n}\r\n"
 
 /***/ }),
 /* 76 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n\r\n    float a = 110.0 * PI /180.0; // angle to rad conversion\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    vec4 modifiedPos = rMat * vs_Pos;\r\n\r\n    modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n//    //Adjust our distance to be non-linear.\r\n//     dist = pow(dist,4.0);\r\n//     //Set the max amount a wave can be distorted based on distance.\r\n//     dist = max(dist, 1.0);\r\n//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?\r\n\r\n    // jellyfish motion - waves down body\r\n   // modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\n\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n     // place the fish relative to the terrain ground plane\r\n   // vec4 myPos = vec4(vs_Pos.x - (u_PlanePos.y* 0.5), vs_Pos.y, vs_Pos.z + (u_PlanePos.x * 0.5), 1.0);\r\n    vec4 myPos = vs_Pos;\r\n   \r\n   // (rand() % (max- min)) + min\r\n    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120\r\n    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n   // vec4 modifiedPos = rMat * vs_Pos;\r\n    vec4 modifiedPos = rMat * myPos;\r\n\r\n    modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n\r\n\r\n    // jellyfish motion - waves down body\r\n   // modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n\r\n/*\r\n  float index = getBiome();\r\n  // use this to know what biome we're in to know which type of fish to render\r\n\r\n  if (index == 1.0) {\r\n    // sandy hills - done\r\n\r\n  } \r\n  else if (index == 2.0) {\r\n    // barren sand floor - done\r\n\r\n  } \r\n  else if (index == 3.0) {\r\n    // grassy floor\r\n\r\n  } \r\n  else if (index == 4.0) {\r\n    // sandbar rocks - done\r\n\r\n  }\r\n  */\r\n  \r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
 
 /***/ }),
 /* 77 */
@@ -17059,7 +17134,7 @@ module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 
 /* 78 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n\r\n    float a = 110.0 * PI /180.0; // angle to rad conversion\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    vec4 modifiedPos = rMat * vs_Pos;\r\n\r\n    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n//    //Adjust our distance to be non-linear.\r\n//     dist = pow(dist,4.0);\r\n//     //Set the max amount a wave can be distorted based on distance.\r\n//     dist = max(dist, 1.0);\r\n//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?\r\n\r\n    // jellyfish motion - waves down body\r\n    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion\r\n     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); \r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n\r\n    float a = 110.0 * PI /180.0; // angle to rad conversion\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    vec4 modifiedPos = rMat * vs_Pos;\r\n\r\n    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n//    //Adjust our distance to be non-linear.\r\n//     dist = pow(dist,4.0);\r\n//     //Set the max amount a wave can be distorted based on distance.\r\n//     dist = max(dist, 1.0);\r\n//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?\r\n\r\n    // jellyfish motion - waves down body\r\n    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion\r\n     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); \r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
 
 /***/ }),
 /* 79 */
