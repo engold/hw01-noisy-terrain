@@ -6111,12 +6111,37 @@ let dPressed;
 let planePos;
 //let obj0: string = readTextFile('./src/geometry/wahoo.obj')
 let obj0 = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/smallFish_normals.obj');
+let squareFishString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/squareFish_normals.obj');
+let swObj = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/seaweed_moreVerts.obj'); //readTextFile('./src/geometry/seaweed.obj');
+let sharkString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/Shark.obj');
+let ruddString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/Rudd_Fish.obj');
+let coralBString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/finalCoralBottom2.obj');
+let coralTString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/finalCoralTop.obj');
+let mantaString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/manta.obj');
 let guiSpeed;
 let speed = 1.0;
 let startVar = Date.now(); // for u_time
 // for drawing fish testing
 let testObj;
 let mesh1;
+let goldfish;
+let jellyMesh;
+let jellyField;
+let squareFish;
+let squareFish2;
+let seaOfWeed;
+let seaWeed2;
+let seaWeed3;
+let seaWeed4;
+let seaWeed1;
+let shark;
+let rudd;
+let coralBottom;
+let coralTop;
+let mantaRay;
+let mantaRay2;
+let mantasInTheBack;
+let orangeFishSchool1;
 function populateFormationlArray(textFilePath) {
     let theString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])(textFilePath);
     var parsedArray = theString.split('\n');
@@ -6131,40 +6156,54 @@ function populateFormationlArray(textFilePath) {
     }
     return theArray;
 }
-function setFishVBOs(theMesh, formationData) {
+// for the yellow fish
+// set them at the back of the barren ground land biome
+function setFishVBOs2(theMesh, formationData, t) {
     let colorsArray = [];
     let col1Array = [];
     let col2Array = [];
     let col3Array = [];
     let col4Array = [];
-    let scale = 1.0;
+    let scale = 3.5;
     let numInstances = formationData.length / 3.0;
     let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
     for (var i = 0; i < numInstances * 3.0; i += 3) {
-        colorsArray.push(0.9333); // r value
-        colorsArray.push(0.3529); // g
-        colorsArray.push(0.1216); // b
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + formationData[i], 4.0 + t[1] + formationData[i + 1] + Math.random(), t[2] + formationData[i + 2]));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        // yellow  
+        colorsArray.push(1.0 - (Math.random() * (.2 - 0.01) + 0.01)); // r value
+        colorsArray.push(1.0 - (Math.random() * (.2 - 0.01) + 0.01)); // g
+        colorsArray.push(0.0 + (Math.random() * (.2 - 0.01) + 0.01)); // b
         colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
         // transform column 1
-        col1Array.push(scale);
-        col1Array.push(0.0);
-        col1Array.push(0.0);
-        col1Array.push(0.0);
-        // transform column 2
-        col2Array.push(0.0);
-        col2Array.push(scale);
-        col2Array.push(0.0);
-        col2Array.push(0.0);
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
         // transform column 3
-        col3Array.push(0.0);
-        col3Array.push(0.0);
-        col3Array.push(scale);
-        col3Array.push(0.0);
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
         // transform column 4
-        col4Array.push(formationData[i]);
-        col4Array.push(5 + formationData[i + 1] + Math.random()); // random val between 0 and 1 to offset height
-        col4Array.push(formationData[i + 2]);
-        col4Array.push(1.0);
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
         counter++;
     }
     let col1 = new Float32Array(col1Array);
@@ -6172,55 +6211,532 @@ function setFishVBOs(theMesh, formationData) {
     let col3 = new Float32Array(col3Array);
     let col4 = new Float32Array(col4Array);
     let colors = new Float32Array(colorsArray);
-    console.log(col4Array);
+    //console.log(col4Array);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+function setFishVBOs(theMesh, formationData, t) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 5;
+    let numInstances = formationData.length / 3.0;
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    for (var i = 0; i < numInstances * 3.0; i += 3) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + formationData[i], t[1] + formationData[i + 1] + Math.random(), t[2] + formationData[i + 2]));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        colorsArray.push(0.9333 + (Math.random() * (.06667 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.3529 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+        colorsArray.push(0.1216 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+        colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
+    //console.log(col4Array);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+//jellyfish
+function setJellyVBOs(theMesh, t, numInstances) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 8.0;
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let temp = 0;
+    for (var i = 0; i < numInstances; i++) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        if (i % 2 != 0.0) {
+            temp = -i;
+        }
+        else {
+            temp = i;
+        }
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * 2.5 + Math.random(), t[1] + Math.random() * 2.0, t[2] + temp * 2.5 + Math.random()));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        // purple,  vec3(0.8314, 0.1647, 1.0);
+        colorsArray.push(0.8314 + (Math.random() * (.0169 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.1647 + (Math.random() * (.2 - 0.01) + 0.01)); // g
+        colorsArray.push(1.0 - (Math.random() * (.2 - 0.01) + 0.01)); // b
+        colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+function setJellyFieldVBOs(theMesh, t, numInstances, offset, h_offset) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 12 + (Math.random() * (1.0 - 0.5) + 0.5);
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let temp = 1;
+    let temp2 = 1;
+    for (var i = 0; i < numInstances; i++) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        //  * (max - min) + min;
+        temp = Math.random() * (10.0 - 0.75) + 0.75;
+        temp2 = temp;
+        // for odd numbered
+        if (i % 2 != 0.0) {
+            temp *= -1;
+        }
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * Math.random() * offset, // (tempZ*(tempX*0.75))
+        t[1] + Math.random() * h_offset, t[2] + temp2 * Math.random() * offset));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        //   vec3(0.8314, 0.1647, 1.0);
+        colorsArray.push(0.8314 + (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.1647 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+        colorsArray.push(1.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+        colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
+    //console.log(col4Array);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+//seaweed
+function setSeaWeedVBOs(theMesh, t, numInstances, offset) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 12.0;
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let temp = 1;
+    let temp2 = 1;
+    for (var i = 0; i < numInstances; i++) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        //  * (max - min) + min;
+        temp = Math.random() * (10.0 - 0.75) + 0.75;
+        temp2 = temp;
+        // for odd numbered
+        if (i % 2 != 0.0) {
+            temp *= -1;
+        }
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * Math.random() * offset, // (tempZ*(tempX*0.75))
+        t[1] + Math.random(), t[2] + temp2 * Math.random() * offset));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        // purple, getting overwritten in shader
+        colorsArray.push(0.0627 + (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.4 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+        colorsArray.push(0.1333 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+        colorsArray.push(0.1 + (i % 30.0) / 31.0); // alpha, use as offset in shader
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
+    //console.log(col4Array);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+}
+//coral
+function setCoralVBOs(theMesh, theOtherMesh, t, numInstances, offset) {
+    let colorsArray = [];
+    let colorsArray_Bottom = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let col4ArrayBottom = []; // for bottom
+    let scale = 24.0;
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMatBottom = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(); // for bottom rock piece
+    let overallMatBottom = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(); // for bottom
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let temp = 1;
+    let temp2 = 1;
+    let r1;
+    let r2;
+    let r3;
+    for (var i = 0; i < numInstances; i++) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMatBottom = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(); // for bottom
+        overallMatBottom = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(); // for bottom
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        //  * (max - min) + min;
+        temp = Math.random() * (10.0 - 0.75) + 0.75;
+        temp2 = temp;
+        // for odd numbered
+        if (i % 2 != 0.0) {
+            temp *= -1;
+        }
+        r1 = Math.random();
+        r2 = Math.random() * (0.75 - 0.3) - 0.3;
+        r3 = Math.random();
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * r1 * offset, t[1] + 0.5 + r2, // offset the height from the base by 2
+        t[2] + temp2 * r3 * offset));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        // for bottom
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMatBottom, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * r1 * offset, t[1] + r2, // offset the height from the base by 2
+        t[2] + temp2 * r3 * offset));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMatBottom, overallMatBottom, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMatBottom, overallMatBottom, translateMatBottom);
+        // purple, getting overwritten in shader
+        colorsArray.push(1.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+        colorsArray.push(1.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+        colorsArray.push(0.0); // alpha, use as offset in shader
+        colorsArray_Bottom.push(0.8549); // for bottom array
+        colorsArray_Bottom.push(0.8078);
+        colorsArray_Bottom.push(0.5451);
+        colorsArray_Bottom.push(-1.0);
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]);
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        col4ArrayBottom.push(overallMatBottom[12]);
+        col4ArrayBottom.push(overallMatBottom[13]);
+        col4ArrayBottom.push(overallMatBottom[14]);
+        col4ArrayBottom.push(overallMatBottom[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let col4Bottom = new Float32Array(col4ArrayBottom); // for bottom
+    let colors = new Float32Array(colorsArray);
+    let colorsBottom = new Float32Array(colorsArray_Bottom);
+    theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+    theMesh.setNumInstances(counter);
+    theOtherMesh.setInstanceVBOs(col1, col2, col3, col4Bottom, colorsBottom);
+    theOtherMesh.setNumInstances(counter);
+}
+//MantaRays
+function setMantaRayVBOs(theMesh, t, numInstances, offset) {
+    let colorsArray = [];
+    let col1Array = [];
+    let col2Array = [];
+    let col3Array = [];
+    let col4Array = [];
+    let scale = 13.0;
+    let counter = 0;
+    let overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    let temp = 1;
+    let temp2 = 1;
+    for (var i = 0; i < numInstances; i++) {
+        //reset
+        overallMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        translateMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        scalelMat = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+        //  * (max - min) + min;
+        temp = Math.random() * (10.0 - 0.75) + 0.75;
+        temp2 = temp;
+        // for odd numbered
+        if (i % 2 != 0.0) {
+            temp *= -1;
+        }
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromScaling(scalelMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(scale, scale, scale));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromTranslation(translateMat, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(t[0] + temp * Math.random() * offset, // (tempZ*(tempX*0.75))
+        t[1] + Math.random(), t[2] + temp2 * Math.random() * offset));
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, scalelMat);
+        __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(overallMat, overallMat, translateMat);
+        //  [0.4275, 0.3412, 0.3412, -1.0]
+        colorsArray.push(0.4275 + (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+        colorsArray.push(0.3412 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+        colorsArray.push(0.3412 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+        colorsArray.push(-1.0 * (0.1 + (i % 30.0) / 31.0)); // id for shader
+        // transform column 1
+        col1Array.push(overallMat[0]);
+        col1Array.push(overallMat[1]);
+        col1Array.push(overallMat[2]);
+        col1Array.push(overallMat[3]);
+        // transform column 
+        col2Array.push(overallMat[4]);
+        col2Array.push(overallMat[5]);
+        col2Array.push(overallMat[6]);
+        col2Array.push(overallMat[7]);
+        // transform column 3
+        col3Array.push(overallMat[8]);
+        col3Array.push(overallMat[9]);
+        col3Array.push(overallMat[10]);
+        col3Array.push(overallMat[11]);
+        // transform column 4
+        col4Array.push(overallMat[12]);
+        col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+        col4Array.push(overallMat[14]);
+        col4Array.push(overallMat[15]);
+        counter++;
+    }
+    let col1 = new Float32Array(col1Array);
+    let col2 = new Float32Array(col2Array);
+    let col3 = new Float32Array(col3Array);
+    let col4 = new Float32Array(col4Array);
+    let colors = new Float32Array(colorsArray);
     theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
     theMesh.setNumInstances(counter);
 }
 let formationArray = [];
+let formationArray2 = [];
 function loadScene() {
     square = new __WEBPACK_IMPORTED_MODULE_3__geometry_Square__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0, 0, 0));
     square.create();
+    let jellyString = Object(__WEBPACK_IMPORTED_MODULE_9__globals__["b" /* readTextFile */])('./src/geometry/jellyFish.obj');
+    jellyMesh = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](jellyString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    jellyMesh.create();
     testObj = new __WEBPACK_IMPORTED_MODULE_5__geometry_MyIcosphere__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(3.0, 3.0, 3.0), 1.0, 5.0);
     testObj.create();
     formationArray = populateFormationlArray('./src/geometry/torus.txt');
+    formationArray2 = populateFormationlArray('./src/geometry/rectangle.txt');
     // tiny fish
     mesh1 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](obj0, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
     mesh1.create();
-    setFishVBOs(mesh1, formationArray);
-    // mesh1.setNumInstances(1); // for testing indiviual animation
-    // testing for jelly fish - color overwritten in jelly shader
-    let scale = 2.0;
-    let colorsList = [0.9333, 0.3529, 0.1216, 1.0]; // orange
+    setFishVBOs(mesh1, formationArray, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(3.0, 4, 0));
+    //mesh1.setNumInstances(1); // for testing indiviual animation
+    //second smaller group of orange fish
+    goldfish = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](obj0, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    goldfish.create();
+    setFishVBOs(goldfish, formationArray, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(-40, 6, 90));
+    goldfish.setNumInstances(30);
+    //more orange fish for the coral area
+    orangeFishSchool1 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](obj0, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    orangeFishSchool1.create();
+    setFishVBOs(orangeFishSchool1, formationArray, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(10.0, 8.0, 620));
+    // a school of yellow fish
+    squareFish = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](squareFishString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    squareFish.create();
+    setFishVBOs2(squareFish, formationArray2, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(-55, 7.5, 300));
+    // another school of yellow square fish
+    squareFish2 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](squareFishString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    squareFish2.create();
+    setFishVBOs2(squareFish2, formationArray2, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(15, 12.5, 200));
+    //seaweed
+    seaOfWeed = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](swObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    seaOfWeed.create();
+    setSeaWeedVBOs(seaOfWeed, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, -5.0), 200, 1.3);
+    // more groups od seaweed
+    seaWeed2 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](swObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    seaWeed2.create();
+    seaWeed3 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](swObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    seaWeed3.create();
+    seaWeed4 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](swObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    seaWeed4.create();
+    seaWeed1 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](swObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    seaWeed1.create();
+    setSeaWeedVBOs(seaWeed2, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(-3.5, 0.0, 35.0), 1000, 7);
+    setSeaWeedVBOs(seaWeed3, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(2.0, 0.0, 5.0), 300, 5.0);
+    setSeaWeedVBOs(seaWeed4, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 240.0), 800, 5.0); // for the grassy area
+    setSeaWeedVBOs(seaWeed1, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, -20.0), 1200, 16.0); // closest to the camera on start
+    //setSeaWeedVBOs(seaWeed1, vec3.fromValues(0.0, 0.0, -20.0), 600, 6.0); // closest to the camera on start
+    // jelly fish model
+    setJellyVBOs(jellyMesh, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(5, 6, 230), 3);
+    // a bunch of jelly fish
+    jellyField = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](jellyString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 2.0, 0.0));
+    jellyField.create();
+    setJellyFieldVBOs(jellyField, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(2.0, 5.0, 130.0), 85, 15.0, 2.0);
+    //shark
+    let scale = 2.75;
+    let colorsList = [0.0627, 0.051, 0.2471, -10.0]; //vec3(0.0627, 0.051, 0.2471)
     let c1Array = [scale, 0.0, 0.0, 0.0];
     let c2Array = [0.0, scale, 0.0, 0.0];
     let c3Array = [0.0, 0.0, scale, 0.0];
-    let c4Array = [0.0, 4.0, 0.0, 1.0]; // displacement
+    let c4Array = [1500.0, 17.0, 70.0, 1.0]; // displacement
     let col1Array = new Float32Array(c1Array);
     let col2Array = new Float32Array(c2Array);
     let col3Array = new Float32Array(c3Array);
     let col4Array = new Float32Array(c4Array);
     let colorArray = new Float32Array(colorsList);
-    // the jelly fish
-    testObj.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
-    testObj.setNumInstances(1);
-    //  let offsetsArray = [];
-    //   let colorsArray = [];
-    //   let n: number = 100.0;
-    //   for(let i = 0; i < n; i++) {
-    //     for(let j = 0; j < n; j++) {
-    //       offsetsArray.push(i);
-    //       offsetsArray.push(j);
-    //       offsetsArray.push(0);
-    //       colorsArray.push(i / n);
-    //       colorsArray.push(j / n);
-    //       colorsArray.push(1.0);
-    //       colorsArray.push(1.0); // Alpha channel
-    //     }
-    //   }
-    //   let offsets: Float32Array = new Float32Array(offsetsArray);
-    //   let colors: Float32Array = new Float32Array(colorsArray);
-    //   mesh1.setInstanceVBOs(offsets, colors);
-    //   mesh1.setNumInstances(n * n); // grid of "particles"
+    shark = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](sharkString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    shark.create();
+    shark.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
+    shark.setNumInstances(1);
+    // manta rays
+    mantaRay = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](mantaString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    mantaRay.create();
+    mantaRay2 = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](mantaString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    mantaRay2.create();
+    mantasInTheBack = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](mantaString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    mantasInTheBack.create();
+    setMantaRayVBOs(mantaRay, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(40, 1.2, 110), 10, 3.5);
+    setMantaRayVBOs(mantaRay2, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(-25, 1.2, 110), 10, 3.5);
+    setMantaRayVBOs(mantasInTheBack, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(-25, 1.2, 500), 300, 30.5);
+    // 3 rudd fish that go across screen
+    rudd = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](ruddString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    rudd.create();
+    let scale2 = 0.20;
+    let s = 0.15;
+    let c1 = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0784, 0.0706, 0.3608);
+    let c2 = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.102, 0.098, 0.3255);
+    let c3 = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.1765, 0.1647, 0.502);
+    let colorsListRudd = [c1[0], c1[1], c1[2], 2.0, c2[0], c2[1], c2[3], 3.0, c1[0], c1[1], c1[2], 0.75];
+    let c1ArrayRudd = [scale2, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, s * 0.75, 0.0, 0.0, 0.0];
+    let c2ArrayRudd = [0.0, scale2, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, s * 0.75, 0.0, 0.0];
+    let c3ArrayRudd = [0.0, 0.0, scale2, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, s * 0.75, 0.0];
+    let c4ArrayRudd = [-230.0, 20.0, 40.0, 1.0, -385.0, 22.0, 60.0, 1.0, 400.0, 40.0, 50.0, 1.0]; // displacement
+    let col1ArrayRudd = new Float32Array(c1ArrayRudd);
+    let col2ArrayRudd = new Float32Array(c2ArrayRudd);
+    let col3ArrayRudd = new Float32Array(c3ArrayRudd);
+    let col4ArrayRudd = new Float32Array(c4ArrayRudd);
+    let colorArrayRudd = new Float32Array(colorsListRudd);
+    rudd.setInstanceVBOs(col1ArrayRudd, col2ArrayRudd, col3ArrayRudd, col4ArrayRudd, colorArrayRudd);
+    rudd.setNumInstances(3);
+    coralBottom = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](coralBString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    coralBottom.create();
+    coralTop = new __WEBPACK_IMPORTED_MODULE_6__geometry_Mesh__["a" /* default */](coralTString, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    coralTop.create();
+    setCoralVBOs(coralTop, coralBottom, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0.0, 0.0, 200.0), 60, 14.0);
     //                                                        100,100
     plane = new __WEBPACK_IMPORTED_MODULE_4__geometry_Plane__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(0, 0, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec2 */].fromValues(600, 300), 20);
     plane.create();
@@ -6298,7 +6814,7 @@ function main() {
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.VERTEX_SHADER, __webpack_require__(74)),
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.FRAGMENT_SHADER, __webpack_require__(75)),
     ]);
-    // for fish and plants
+    // for schools fish
     const instance = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["b" /* default */]([
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.VERTEX_SHADER, __webpack_require__(76)),
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.FRAGMENT_SHADER, __webpack_require__(77)),
@@ -6306,6 +6822,16 @@ function main() {
     const instanceJellyShader = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["b" /* default */]([
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.VERTEX_SHADER, __webpack_require__(78)),
         new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.FRAGMENT_SHADER, __webpack_require__(79)),
+    ]);
+    //for plants
+    const instancePlants = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["b" /* default */]([
+        new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.VERTEX_SHADER, __webpack_require__(80)),
+        new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.FRAGMENT_SHADER, __webpack_require__(81)),
+    ]);
+    // shark and other things relative to camera
+    const screenSpaceShader = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["b" /* default */]([
+        new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.VERTEX_SHADER, __webpack_require__(82)),
+        new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_ShaderProgram__["a" /* Shader */](gl.FRAGMENT_SHADER, __webpack_require__(83)),
     ]);
     function processKeyPresses() {
         let velocity = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec2 */].fromValues(0, 0);
@@ -6331,6 +6857,8 @@ function main() {
         //-------------------------
         instance.setPlanePos(newPos);
         instanceJellyShader.setPlanePos(newPos);
+        instancePlants.setPlanePos(newPos);
+        screenSpaceShader.setPlanePos(newPos);
         //---------------------------
         planePos = newPos;
         // update instanced geom here?? - I added this
@@ -6352,6 +6880,8 @@ function main() {
         flat.setUTime(Date.now() - startVar);
         instance.setUTime(Date.now() - startVar);
         instanceJellyShader.setUTime(Date.now() - startVar);
+        instancePlants.setUTime(Date.now() - startVar);
+        screenSpaceShader.setUTime(Date.now() - startVar);
         // draw the ground/terrain
         renderer.render(camera, lambert, 1.0, [
             plane,
@@ -6361,14 +6891,38 @@ function main() {
             square,
         ]);
         // draw the instanced geometry
+        // draw fish swimming by
+        renderer.render(camera, screenSpaceShader, 1.0, [
+            shark,
+            rudd,
+            mantaRay,
+            mantaRay2,
+            mantasInTheBack
+        ]);
         // draw small fish
         renderer.render(camera, instance, 1.0, [
             // testObj, // sphere
             mesh1,
+            goldfish,
+            squareFish,
+            squareFish2,
+            orangeFishSchool1,
         ]);
         // draw jellyfish
         renderer.render(camera, instanceJellyShader, 1.0, [
-            testObj // sphere
+            // testObj, // sphere
+            jellyMesh,
+            jellyField,
+        ]);
+        //draw plants
+        renderer.render(camera, instancePlants, 1.0, [
+            seaOfWeed,
+            seaWeed1,
+            seaWeed2,
+            seaWeed3,
+            seaWeed4,
+            coralBottom,
+            coralTop,
         ]);
         stats.end();
         // Tell the browser to call `tick` again whenever it renders a new frame
@@ -6378,10 +6932,14 @@ function main() {
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.setAspectRatio(window.innerWidth / window.innerHeight);
         camera.updateProjectionMatrix();
+        // set dimensions for u_Dimensions in shader, I added this
+        instancePlants.setDimensions(window.innerWidth, window.innerHeight);
     }, false);
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.setAspectRatio(window.innerWidth / window.innerHeight);
     camera.updateProjectionMatrix();
+    // set dimensions for u_Dimensions in shader, i added this
+    instancePlants.setDimensions(window.innerWidth, window.innerHeight);
     // Start the render loop
     tick();
 }
@@ -13811,6 +14369,8 @@ class OpenGLRenderer {
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].multiply(viewProj, camera.projectionMatrix, camera.viewMatrix);
         prog.setModelMatrix(model);
         prog.setViewProjMatrix(viewProj);
+        //for u_Eye
+        prog.setEyeRefUp(camera.controls.eye);
         // add for hw1
         prog.setHeightVar(height);
         for (let drawable of drawables) {
@@ -13838,7 +14398,7 @@ class Camera {
         this.aspectRatio = 1;
         this.near = 0.1;
         // far: number = 1000;
-        this.far = 200000; // tried to double gow far I see in Z dir?
+        this.far = 1000; // tried to double gow far I see in Z dir?
         this.position = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create();
         this.direction = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create();
         this.target = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create();
@@ -13859,7 +14419,11 @@ class Camera {
     update() {
         this.controls.tick();
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].add(this.target, this.position, this.direction);
+        // this.position = vec3.fromValues(this.controls.eye[0], this.controls.eye[1], this.controls.eye[2]); // added
+        // this.target = vec3.fromValues(this.controls.center[0], this.controls.center[1], this.controls.center[2]); // added
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].lookAt(this.viewMatrix, this.controls.eye, this.controls.center, this.controls.up);
+        // added
+        //  this.position = this.controls.eye;
     }
 }
 ;
@@ -16975,6 +17539,8 @@ class ShaderProgram {
         this.unifHeightVar = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_HeightVar"); // added for hw1
         this.unifGlacierHeight = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_GlacierHeight"); // added for hw1
         this.unifTime = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Time"); // added for hw1
+        this.unifEye = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Eye"); // 
+        this.unifDimensions = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Dimensions"); //  i added this
         // Added for HW4
         this.attrTransformC1 = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getAttribLocation(this.prog, "vs_TransformC1");
         this.attrTransformC2 = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getAttribLocation(this.prog, "vs_TransformC2");
@@ -16985,6 +17551,25 @@ class ShaderProgram {
         if (activeProgram !== this.prog) {
             __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].useProgram(this.prog);
             activeProgram = this.prog;
+        }
+    }
+    // for u_Eye
+    setEyeRefUp(eye /*, ref: vec3, up: vec3*/) {
+        this.use();
+        if (this.unifEye !== -1) {
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].uniform3f(this.unifEye, eye[0], eye[1], eye[2]);
+        }
+        // if(this.unifRef !== -1) {
+        //   gl.uniform3f(this.unifRef, ref[0], ref[1], ref[2]);
+        // }
+        // if(this.unifUp !== -1) {
+        //   gl.uniform3f(this.unifUp, up[0], up[1], up[2]);
+        // }
+    }
+    setDimensions(width, height) {
+        this.use();
+        if (this.unifDimensions !== -1) {
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].uniform2f(this.unifDimensions, width, height);
         }
     }
     //for hw1
@@ -17098,13 +17683,13 @@ class ShaderProgram {
 /* 72 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\n\r\nuniform mat4 u_Model;\r\nuniform mat4 u_ModelInvTr;\r\nuniform mat4 u_ViewProj;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\nuniform float u_Time;\r\n\r\nin vec4 vs_Pos;\r\nin vec4 vs_Nor;\r\nin vec4 vs_Col;\r\n\r\nout vec3 fs_Pos;\r\nout vec4 fs_Nor;\r\nout vec4 fs_Col;\r\n\r\nout float index; // identifier for type of terrain\r\nout float time;\r\n\r\nout float fs_Sine;\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nvoid main()\r\n{\r\n  float height = fbm((vs_Pos.x + u_PlanePos.x) / 24.0, (vs_Pos.z + u_PlanePos.y) / 24.0); \r\n  float noiseTerm = fbm((vs_Pos.x + u_PlanePos.x + worley(50.f,8.0)) / 8.0, (vs_Pos.z + u_PlanePos.y + worley(50.f,8.0)) / 8.0);\r\n  fs_Pos = vs_Pos.xyz;\r\n  vec4 modelposition = vec4(1.0);\r\n  float n = 0.0;\r\n\r\n// returns an identifier number for which biome we are currently in\r\n  index = getBiome();\r\n\r\n  if (index == 1.0) {\r\n    // sandy hills - done\r\n    //          exp controls sharpness\r\n    float n = pow(2.0*height,2.1) + abs(mod(floor(height*32.0), 2.0)) * 0.2;\r\n    fs_Sine = n;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 2.0) {\r\n    // barren sand floor - done\r\n    float n = smoothstep(0.0,0.7, pow(worley(4.0,50.0),3.0)) + sqrt(2.0*noiseTerm);\r\n    fs_Sine = n/ height; // for sunlight patches\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 3.0) {\r\n    // grassy floor\r\n    float noise = smoothstep(0.0,0.5, pow(worley(4.0, 40.0), 3.5)) + worley(2.0*noiseTerm, 2.5) + floor(sin(height) * 3.0);\r\n    fs_Sine = noise* height;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + noise, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 4.0) {\r\n    // sandbar rocks - done\r\n    float n = pow(getNewHeight(height), 1.5);\r\n    fs_Sine = n;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n\r\n  }\r\n  \r\n  //modelposition = vs_Pos; // completely flat \r\n  modelposition = u_Model * modelposition;\r\n  gl_Position = u_ViewProj * modelposition;\r\n}"
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_Model;\r\nuniform mat4 u_ModelInvTr;\r\nuniform mat4 u_ViewProj;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\nuniform float u_Time;\r\n\r\nin vec4 vs_Pos;\r\nin vec4 vs_Nor;\r\nin vec4 vs_Col;\r\n\r\nout vec3 fs_Pos;\r\nout vec4 fs_Nor;\r\nout vec4 fs_Col;\r\n\r\nout float index; // identifier for type of terrain\r\nout float time;\r\n\r\nout float fs_Sine;\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nvoid main()\r\n{\r\n  float height = fbm((vs_Pos.x + u_PlanePos.x) / 24.0, (vs_Pos.z + u_PlanePos.y) / 24.0); \r\n  float noiseTerm = fbm((vs_Pos.x + u_PlanePos.x + worley(50.0,8.0)) / 8.0, (vs_Pos.z + u_PlanePos.y + worley(50.0,8.0)) / 8.0);\r\n  fs_Pos = vs_Pos.xyz;\r\n  vec4 modelposition = vec4(1.0);\r\n  float n = 0.0;\r\n\r\n// returns an identifier number for which biome we are currently in\r\n  index = getBiome();\r\n\r\n  if (index == 1.0) {\r\n    // sandy hills - done\r\n    //          exp controls sharpness\r\n    float n = pow(2.0*height,2.1) + abs(mod(floor(height*32.0), 2.0)) * 0.2;\r\n    fs_Sine = n;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 2.0) {\r\n    // barren sand floor - done\r\n    float n = smoothstep(0.0,0.7, pow(worley(4.0,50.0),3.0)) + sqrt(2.0*noiseTerm);\r\n    fs_Sine = n/ height; // for sunlight patches\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 3.0) {\r\n    // grassy floor\r\n    float noise = smoothstep(0.0,0.5, pow(worley(4.0, 40.0), 3.5)) + worley(2.0*noiseTerm, 2.5) + floor(sin(height) * 3.0);\r\n    fs_Sine = noise* height;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + noise, vs_Pos.z, 1.0);\r\n  } \r\n  else if (index == 4.0) {\r\n    // sandbar rocks - done\r\n    float n = pow(getNewHeight(height), 1.5);\r\n    fs_Sine = n;\r\n    modelposition = vec4(vs_Pos.x, vs_Pos.y + n, vs_Pos.z, 1.0);\r\n\r\n  }\r\n  \r\n  //modelposition = vs_Pos; // completely flat \r\n  modelposition = u_Model * modelposition;\r\n  gl_Position = u_ViewProj * modelposition;\r\n}"
 
 /***/ }),
 /* 73 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nuniform float u_HeightVar;// added for hw1\r\nuniform float u_GlacierHeight;// added for hw1\r\nuniform float u_Time;// added for hw1\r\n\r\nin vec3 fs_Pos;\r\nin vec4 fs_Nor;\r\nin vec4 fs_Col;\r\n\r\nin float fs_Sine;\r\nin float index;\r\n\r\nout vec4 out_Col; // This is the final output color that you will see on your\r\n                  // screen for the pixel that is currently being processed.\r\n\r\n\r\nvoid main()\r\n{\r\n    //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\r\n    //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur\r\n    //float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    // t*= 2.5; // extend the fog??\r\n  \r\n  vec3 c = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\n  vec3 c2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n   vec3 fog_color = vec3(0.0706, 0.1529, 0.3804);\r\n\r\n    // vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);\r\n\r\n     // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);\r\n    // get around floating point error\r\n    if (index - 1.0 < 0.2) {\r\n        // sand hill color vec3(0.5608, 0.4392, 0.1059)\r\n            out_Col = vec4(mix(vec3(0.7608, 0.6588, 0.3804) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 2.0 < 0.2) {\r\n        // flat sand floor color\r\n        out_Col = vec4(mix(vec3(0.8863, 0.7176, 0.2902) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 3.0 < 0.2) {\r\n       // grassy area\r\n        //---------------------------------------------------------------------------------\r\n        // if(fs_Sine - 1.0 > 2.0){\r\n        //   out_Col = vec4(mix(vec3(1.0, 0.9647, 0.4784), fog_color, t), 1.0);\r\n        // }\r\n        // else{\r\n        out_Col = vec4(mix(vec3(0.0706, 0.3922, 0.1333)* 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n       // }\r\n    }\r\n     else if (index - 4.0 < 0.2) {\r\n         if (fs_Sine -1.0 >= 0.2) {\r\n            out_Col = vec4(mix(vec3(0.4667, 0.4667, 0.4667) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n        } else if (fs_Sine > 0.6) {\r\n            vec3 rock = vec3(0.3333, 0.3333, 0.3333); // good\r\n            vec3 rockBottom = vec3(0.2549, 0.2275, 0.0902); // good\r\n            vec3 temp = mix(rockBottom, rock, (fs_Sine - 0.6) / 0.4);\r\n            out_Col = vec4(mix(temp, fog_color, t), 1.0);\r\n        } else {\r\n            vec3 sand = vec3(193.0/255.0, 175.0/255.0, 94.0/255.0);\r\n            vec3 low = vec3(0.4784, 0.4078, 0.2235);\r\n            vec3 in_between = mix(low, sand, (fs_Sine - 0.4) / 0.6);\r\n            out_Col = vec4(mix(in_between, fog_color, t), 1.0);\r\n        }\r\n    }\r\n    else {\r\n        out_Col = vec4(mix(vec3(0.5 * (fs_Sine*0.15) + 0.1), fog_color, t), 1.0);\r\n    }\r\n    \r\n  \r\n}"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nuniform float u_HeightVar;// added for hw1\r\nuniform float u_GlacierHeight;// added for hw1\r\nuniform float u_Time;// added for hw1\r\n\r\nin vec3 fs_Pos;\r\nin vec4 fs_Nor;\r\nin vec4 fs_Col;\r\n\r\nin float fs_Sine;\r\nin float index;\r\n\r\nout vec4 out_Col; // This is the final output color that you will see on your\r\n                  // screen for the pixel that is currently being processed.\r\n\r\n\r\nvoid main()\r\n{\r\n    //float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\r\n    //                                    length(fs_Pos/ 1.5)) / 2.0     // gives circular blur\r\n    //float t = clamp(smoothstep(40.0, 50.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    float t = clamp(smoothstep(70.0, 80.0, fs_Pos.z), 0.0, 1.0); // Distance fog\r\n    // t*= 2.5; // extend the fog??\r\n  \r\n  vec3 c = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\n  vec3 c2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n   vec3 fog_color = vec3(0.0706, 0.1529, 0.3804);\r\n\r\n    // vec3 fog_color = vec3(0.0784, 0.1725, 0.4275);\r\n\r\n     // out_Col = vec4(mix(vec3(0.0),vec3(1.0) , sin(u_Time*0.005)), 1.0);\r\n    // get around floating point error\r\n    if (index - 1.0 < 0.2) {\r\n        // sand hill color vec3(0.5608, 0.4392, 0.1059)\r\n            out_Col = vec4(mix(vec3(0.7608, 0.6588, 0.3804) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 2.0 < 0.2) {\r\n        // flat sand floor color\r\n        out_Col = vec4(mix(vec3(0.8863, 0.7176, 0.2902) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\r\n    } \r\n    else if (index - 3.0 < 0.2) {\r\n       // grassy area\r\n        //---------------------------------------------------------------------------------\r\n        out_Col = vec4(mix(vec3(0.0706, 0.3922, 0.1333)* 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n       // }\r\n    }\r\n     else if (index - 4.0 < 0.2) {\r\n         if (fs_Sine -1.0 >= 0.2) {\r\n            out_Col = vec4(mix(vec3(0.4667, 0.4667, 0.4667) * 0.5 * (fs_Sine*0.15) + 0.2, fog_color, t), 1.0);\r\n        } else if (fs_Sine > 0.6) {\r\n            vec3 rock = vec3(0.3333, 0.3333, 0.3333); // good\r\n            vec3 rockBottom = vec3(0.2549, 0.2275, 0.0902); // good\r\n            vec3 temp = mix(rockBottom, rock, (fs_Sine - 0.6) / 0.4);\r\n            out_Col = vec4(mix(temp, fog_color, t), 1.0);\r\n        } else {\r\n            vec3 sand = vec3(193.0/255.0, 175.0/255.0, 94.0/255.0);\r\n            vec3 low = vec3(0.4784, 0.4078, 0.2235);\r\n            vec3 in_between = mix(low, sand, (fs_Sine - 0.4) / 0.6);\r\n            out_Col = vec4(mix(in_between, fog_color, t), 1.0);\r\n        }\r\n    }\r\n    else {\r\n        out_Col = vec4(mix(vec3(0.5 * (fs_Sine*0.15) + 0.1), fog_color, t), 1.0);\r\n    }\r\n    \r\n  \r\n}"
 
 /***/ }),
 /* 74 */
@@ -17116,31 +17701,55 @@ module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform float
 /* 75 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\n// The fragment shader used to render the background of the scene\r\n// Modify this to make your background more interesting\r\n\r\nuniform float u_HeightVar;// added for hw1, used as changing time var\r\nuniform float u_Time;\r\n\r\n\r\nout vec4 out_Col;\r\nin vec4 fs_Pos;\r\n\r\nvoid main() {\r\n\r\nvec3 col = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\nvec3 col2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n\r\n out_Col = vec4(col, 1.0);//vec4(mix(col, col2, 0.35* fs_Pos.y), 1.0); // slight gradient in y dir\r\n// regular background\r\n // out_Col = vec4(col, 1.0);//vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);\r\n}\r\n"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\n// The fragment shader used to render the background of the scene\r\n// Modify this to make your background more interesting\r\n\r\nuniform float u_HeightVar;// added for hw1, used as changing time var\r\nuniform float u_Time;\r\n\r\n\r\nout vec4 out_Col;\r\nin vec4 fs_Pos;\r\n\r\nvoid main() {\r\n\r\nvec3 col = vec3(0.0784, 0.1725, 0.4275);// vec3(0.0706, 0.2275, 0.6549);\r\nvec3 col2 = vec3(0.1765, 0.2824, 0.5725);//vec3(0.3255, 0.4824, 0.9137);\r\n\r\n out_Col = vec4(mix(col, col2, smoothstep(0.5, 1.5, fs_Pos.y)), 1.0); // slight gradient in y dir\r\n// regular background\r\n // out_Col = vec4(col, 1.0);//vec4(164.0 / 255.0, 233.0 / 255.0, 1.0, 1.0);\r\n}\r\n\r\n"
 
 /***/ }),
 /* 76 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\n\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n     // place the fish relative to the terrain ground plane\r\n   // vec4 myPos = vec4(vs_Pos.x - (u_PlanePos.y* 0.5), vs_Pos.y, vs_Pos.z + (u_PlanePos.x * 0.5), 1.0);\r\n    vec4 myPos = vs_Pos;\r\n   \r\n   // (rand() % (max- min)) + min\r\n    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120\r\n    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n   // vec4 modifiedPos = rMat * vs_Pos;\r\n    vec4 modifiedPos = rMat * myPos;\r\n\r\n    modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n\r\n\r\n    // jellyfish motion - waves down body\r\n   // modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n\r\n/*\r\n  float index = getBiome();\r\n  // use this to know what biome we're in to know which type of fish to render\r\n\r\n  if (index == 1.0) {\r\n    // sandy hills - done\r\n\r\n  } \r\n  else if (index == 2.0) {\r\n    // barren sand floor - done\r\n\r\n  } \r\n  else if (index == 3.0) {\r\n    // grassy floor\r\n\r\n  } \r\n  else if (index == 4.0) {\r\n    // sandbar rocks - done\r\n\r\n  }\r\n  */\r\n  \r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\nout float iD;\r\n\r\n\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n \r\n     // place the fish relative to the terrain ground plane in model matrix (overallTransform)\r\n    //vec4 myPos = vs_Pos;\r\n     vec4 myPos = vec4(vs_Pos.x , vs_Pos.y, vs_Pos.z , 1.0);\r\n\r\n   \r\n   // (rand() % (max- min)) + min\r\n    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120\r\n    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n\r\n    //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    // change the model matrix to include the offset of the Key Press movements\r\n   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, \r\n   vs_TransformC4 + vec4(-u_PlanePos.x, 0.0, -u_PlanePos.y, 1.0));\r\n   // vec4 modifiedPos = rMat * vs_Pos;\r\n    vec4 modifiedPos = rMat * myPos;\r\n\r\n    modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down\r\n    modifiedPos.x += (sin(u_Time * 0.005 * (vs_Col.a/ 0.95))/ 0.5); // forward and back\r\n\r\n/// swimming as a group\r\n     float move = u_Time * 0.0005;\r\n     modifiedPos.x += sin(move) * 5.0;//mod(move * 5.0, 1800.0);  \r\n\r\n\r\n\r\n// working on doing a swim motion using sin curve\r\n    //vec4 offsetPos = modifiedPos + vec4(sin(float(u_Time * .0025f)), 0.0, 0.0, 0.0);\r\n    //modifiedPos *= offsetPos;\r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n   //vec4 finalPos = overallTransforms * offsetPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
 
 /***/ }),
 /* 77 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\n\r\nout vec4 out_Col;\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\n\r\nout_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\nin float iD;\r\n\r\nout vec4 out_Col;\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\n\r\n\r\nout_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
 
 /***/ }),
 /* 78 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n\r\n    float a = 110.0 * PI /180.0; // angle to rad conversion\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    vec4 modifiedPos = rMat * vs_Pos;\r\n\r\n    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n//    //Adjust our distance to be non-linear.\r\n//     dist = pow(dist,4.0);\r\n//     //Set the max amount a wave can be distorted based on distance.\r\n//     dist = max(dist, 1.0);\r\n//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?\r\n\r\n    // jellyfish motion - waves down body\r\n    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion\r\n     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); \r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n    // vec3 offset = vs_Translate;\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];\r\n    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);\r\n\r\n\r\n    float a = 110.0 * PI /180.0; // angle to rad conversion\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    // apply individual transforms per instance\r\n   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, \r\n   vs_TransformC4 + vec4(-u_PlanePos.x, 0.0, -u_PlanePos.y, 1.0));\r\n    vec4 modifiedPos = rMat * vs_Pos;\r\n\r\n    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down\r\n    float t = sin(u_Time * 0.0005);\r\n    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;\r\n    \r\n//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));\r\n//    //Adjust our distance to be non-linear.\r\n//     dist = pow(dist,4.0);\r\n//     //Set the max amount a wave can be distorted based on distance.\r\n//     dist = max(dist, 1.0);\r\n//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?\r\n\r\n    // jellyfish motion - waves down body\r\n    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;\r\n    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion\r\n     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); \r\n\r\n     //swim\r\n    // modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down\r\n    //modifiedPos.x += (sin(u_Time * 0.005 * (vs_Col.a/ 0.95))/ 1.5); // forward and back\r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n    // vec4 finalPos = overallTransforms * vs_Pos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
 
 /***/ }),
 /* 79 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\n\r\nout vec4 out_Col;\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\n\r\n// output color passed in\r\n//out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);\r\nvec3 col = vec3(0.8314, 0.1647, 1.0);\r\n\r\nout_Col = clamp(vec4(col * lightIntensity, 1.0), 0.0, 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\n\r\nout vec4 out_Col;\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector =  vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\n\r\n// output color passed in\r\n//out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);\r\nvec3 col = vec3(0.8314, 0.1647, 1.0);\r\n\r\nout_Col = vec4(clamp(fs_Col.xyz * lightIntensity, 0.0, 1.0), 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\nout float iD;\r\n\r\n\r\n\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n \r\n     // place the fish relative to the terrain ground plane in model matrix (overallTransform)\r\n    //vec4 myPos = vs_Pos;\r\n     vec4 myPos = vec4(vs_Pos.x , vs_Pos.y, vs_Pos.z , 1.0);\r\n\r\n   \r\n   // (rand() % (max- min)) + min\r\n    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120\r\n    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    mat4 rMatCoral = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI/180.0));\r\n    // apply individual transforms per instance\r\n\r\n    //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    // change the model matrix to include the offset of the Key Press movements\r\n   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, \r\n   vs_TransformC4 + vec4((vs_Pos.x -u_PlanePos.x)* 2.0, 0.0, (vs_Pos.z -u_PlanePos.y)*2.0, 1.0));\r\n    vec4 modifiedPos;// = rMat * myPos;\r\n    vec4 offsetPos;\r\n\r\nif(vs_Col.a < 0.01){ // coral ID- no animation\r\nmodifiedPos = rMatCoral* myPos;\r\noffsetPos = modifiedPos;\r\n}\r\nelse{\r\n    modifiedPos = rMat * myPos;\r\n    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;\r\n    offsetPos = modifiedPos;\r\n    offsetPos.xz = modifiedPos.zx; // flip x and z\r\n}\r\n\r\n// sin curve on y axis??\r\n//  modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;\r\n//  vec4 offsetPos = modifiedPos;\r\n//  offsetPos.xz = modifiedPos.zx; // flip x and z\r\n\r\n\r\n    vec4 finalPos = overallTransforms * offsetPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\nuniform vec2 u_PlanePos; \r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\nin float iD;\r\n\r\nout vec4 out_Col;\r\n\r\n\r\n// float random (in vec2 st) {\r\n//     return fract(sin(dot(st.xy,\r\n//                          vec2(12.9898,78.233)))*\r\n//         43758.5453123);\r\n// }\r\n\r\n// // Based on Morgan McGuire @morgan3d\r\n// // https://www.shadertoy.com/view/4dS3Wd\r\n// float noise (in vec2 st) {\r\n//     vec2 i = floor(st);\r\n//     vec2 f = fract(st);\r\n\r\n//     // Four corners in 2D of a tile\r\n//     float a = random(i);\r\n//     float b = random(i + vec2(1.0, 0.0));\r\n//     float c = random(i + vec2(0.0, 1.0));\r\n//     float d = random(i + vec2(1.0, 1.0));\r\n\r\n//     vec2 u = f * f * (3.0 - 2.0 * f);\r\n\r\n//     return mix(a, b, u.x) +\r\n//             (c - a)* u.y * (1.0 - u.x) +\r\n//             (d - b) * u.x * u.y;\r\n// }\r\nfloat random (in vec2 st) {\r\n    return fract(sin(dot(st.xy,\r\n                         vec2(12.9898,78.233)))\r\n                 * 43758.5453123);\r\n}\r\n\r\n// 2D Noise based on Morgan McGuire @morgan3d\r\n// https://www.shadertoy.com/view/4dS3Wd\r\nfloat noise (in vec2 st) {\r\n    vec2 i = floor(st);\r\n    vec2 f = fract(st);\r\n\r\n    // Four corners in 2D of a tile\r\n    float a = random(i);\r\n    float b = random(i + vec2(1.0, 0.0));\r\n    float c = random(i + vec2(0.0, 1.0));\r\n    float d = random(i + vec2(1.0, 1.0));\r\n\r\n    // Smooth Interpolation\r\n\r\n    // Cubic Hermine Curve.  Same as SmoothStep()\r\n    vec2 u = f*f*(3.0-2.0*f);\r\n    // u = smoothstep(0.,1.,f);\r\n\r\n    // Mix 4 coorners percentages\r\n    return mix(a, b, u.x) +\r\n            (c - a)* u.y * (1.0 - u.x) +\r\n            (d - b) * u.x * u.y;\r\n}\r\n\r\n\r\nfloat fbm (vec2 st) {\r\n    // Initial values\r\n    float value = 0.0;\r\n    float amplitude = 0.5;\r\n    float frequency = 0.0;\r\n    //\r\n    // Loop of octaves\r\n    for (int i = 0; i < 8; i++) {\r\n        value += amplitude * abs(noise(st));\r\n       // value += amplitude * noise(st);\r\n        st *= 2.0;\r\n        amplitude *= 0.5;\r\n    }\r\n    return value;\r\n}\r\n\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\nvec3 col;\r\nfloat t = clamp(fs_Pos.z, 0.0, 1.0); // Distance fog\r\nvec3 fog_color = vec3(0.0431, 0.1294, 0.3882);\r\n\r\n\r\nif(fs_Col.a < 0.01 && fs_Col.a > -0.5){ // for coral top\r\ncol = mix(fs_Col.xyz, vec3(1.0, 0.4627, 1.0), smoothstep(0.5, 1.0, fs_Pos.z* fs_Pos.y));// smoothstep(0.0, 1.5, fs_Pos.y));\r\ncol = mix(col,vec3(0.8667, 0.451, 0.8667),smoothstep(0.75, 1.5, fs_Pos.y ) );\r\ncol = mix(col,vec3(0.902, 0.6157, 0.902),smoothstep(1.7, 1.9, fs_Pos.y ) );\r\ncol = mix(col,vec3(0.9882, 0.6745, 0.9882),smoothstep(2.0, 2.3, fs_Pos.y ) );\r\n}\r\nelse if(fs_Col.a < 0.0){ // coral base\r\n vec3 color = fs_Col.xyz;\r\n col = mix(color,vec3(0.4549, 0.3961, 0.1608), 1.0- smoothstep(0.2, 1.5, fs_Pos.z ) );\r\n col = mix(color,vec3(0.6, 0.5294, 0.2235), 1.0- smoothstep(0.5, 1.0, fs_Pos.y ) );\r\n\r\n \r\n   \r\n}\r\nelse{ // for seaweed\r\n col = mix(fs_Col.xyz, fog_color, 0.25);//\r\n //col = fs_Col.xyz;\r\n}\r\n\r\nout_Col = clamp(vec4(col * lightIntensity, 1.0), 0.0, 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\n\r\nuniform mat4 u_ViewProj;\r\nuniform float u_Time;\r\n\r\nuniform mat3 u_CameraAxes; // Used for rendering particles as billboards (quads that are always looking at the camera)\r\n// gl_Position = center + vs_Pos.x * camRight + vs_Pos.y * camUp;\r\nuniform vec2 u_PlanePos; // Our location in the virtual world displayed by the plane\r\n\r\nin vec4 vs_Pos; // Non-instanced; each particle is the same quad drawn in a different place\r\nin vec4 vs_Nor; // Non-instanced, and presently unused\r\nin vec4 vs_Col; // An instanced rendering attribute; each particle instance has a different color\r\nin vec3 vs_Translate; // Another instance rendering attribute used to position each quad instance in the scene\r\nin vec2 vs_UV; // Non-instanced, and presently unused in main(). Feel free to use it for your meshes.\r\n// Columns for overall transformation matrix - unique to each instance\r\nin vec4 vs_TransformC1;\r\nin vec4 vs_TransformC2;\r\nin vec4 vs_TransformC3;\r\nin vec4 vs_TransformC4;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nout vec4 fs_Col;\r\nout vec4 fs_Pos;\r\nout vec4 fs_Nor; // normals\r\nout float iD;\r\n\r\n\r\n\r\nfloat random1( vec2 p , vec2 seed) {\r\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\r\n}\r\n\r\nfloat random1( vec3 p , vec3 seed) {\r\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\r\n}\r\n\r\nvec2 random2( vec2 p , vec2 seed) {\r\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\r\n}\r\n\r\nvec2 random3( vec2 p ) {\r\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\r\n}\r\n\r\nfloat rand(vec2 inVec){\r\n    return fract(sin(dot(inVec.xy ,vec2(12.9898,78.233))) * 43758.5453);\r\n}\r\n\r\nfloat rand1D(int x) {\r\n  x = (x << 13) ^ x;\r\n  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;\r\n}\r\n\r\nfloat getNewHeight(float value){\r\n  float m = 1.75;\r\n  if (value < 0.2) {\r\n    return 0.2* m;\r\n  } \r\n  else if (value < 0.4) {\r\n    return (0.2 + ((value - 0.2) / 0.2)*0.2)* m;\r\n  } \r\n  else if (value < 0.6) {\r\n    return (0.4 + ((value - 0.4) / 0.2)*0.2)* m;\r\n  }\r\n  else if (value < 0.8) {\r\n    return (0.6 + ((value - 0.6) / 0.2)*0.2)* m;\r\n  } \r\n  else {\r\n    return 1.0 * m;\r\n  }\r\n}\r\n\r\nfloat interpNoise2D(float x, float y) {\r\n  float intX = floor(x);\r\n  float fractX = fract(x);\r\n  float intY = floor(y);\r\n  float fractY = fract(y);\r\n\r\n  float v1 = rand(vec2(intX, intY));\r\n  float v2 = rand(vec2(intX + 1.f, intY));\r\n  float v3 = rand(vec2(intX, intY + 1.f));\r\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\r\n\r\n  float i1 = mix(v1, v2, fractX);\r\n  float i2 = mix(v3, v4, fractX);\r\n\r\n  return mix(i1, i2, fractY);\r\n}\r\n\r\nfloat fbm(float x, float y) {\r\n  float roughness = 1.0;\r\n  float total = 0.0;\r\n  float persistence = 0.5;\r\n  int octaves = 8;\r\n\r\n  for (int i = 0; i < octaves; i++) {\r\n    float freq = pow(2.0, float(i));\r\n    float amp = pow(persistence, float(i));\r\n\r\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\r\n    roughness *= interpNoise2D(x*freq, y*freq);\r\n  }\r\n  return total;\r\n}\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\nfloat interpNoise2D(vec2 vec){\r\n  vec2 i = floor(vec);\r\n  vec2 f = fract(vec);\r\n\r\n  float a = rand(i);\r\n  float b = rand(i + vec2(1.0f, 0.0f));\r\n  float c = rand(i + vec2(0.0f, 1.0f));\r\n  float d = rand(i + vec2(1.0f, 1.0f));\r\n \r\n  vec2 u = f * f * (3.0f - 2.0f * f);\r\n\r\nreturn mix(a, b, u.x) + (c-a)*u.y * (1.0f-u.x) + (d-b) * u.x * u.y;\r\n}\r\n\r\nfloat myFbm(float x, float y){\r\n  float total = 0.0f;\r\n  float persistence = 0.5f;\r\n  float octaves = 8.0f;\r\n\r\n  for(float i = 0.0f; i < octaves; i ++){\r\n      float frequency = pow(2.0f, i);\r\n      float amp = pow(persistence, i);\r\n      total += interpNoise2D(vec2(x * frequency, y * frequency)) * amp;       \r\n  }\r\n  return total;\r\n}\r\n\r\n\r\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\r\n\r\n//Worley Noise Book of Shaders: https://thebookofshaders.com/12/\r\nfloat worley (float s, float mult) {\r\n  float cellSize = s;\r\n  vec2 cell = (vs_Pos.xz + u_PlanePos.xy) / cellSize;\r\n  float noise = 0.0;\r\n  \r\n  vec2 fractPos = fract(cell);\r\n  vec2 intPos = floor(cell);\r\n  float distanceVar = 1.0;\r\n\r\n  for (int y = -1; y <= 1; y++) {\r\n    for (int x = -1; x <= 1; x++) {\r\n      vec2 neighbor = vec2(float(x),float(y));\r\n      vec2 rPoint = random3(intPos + neighbor);\r\n\r\n      vec2 diff = neighbor + rPoint - fractPos;\r\n      float dist = length(diff);\r\n      \r\n      if (dist < distanceVar) {\r\n        distanceVar = dist;\r\n        vec2 pt = (rPoint + intPos + neighbor) / cellSize;\r\n        noise = distanceVar*mult;\r\n      }\r\n    } \r\n  }\r\n  return noise;\r\n}\r\n\r\nfloat getBiome() {\r\n  //                                    size\r\n  float noise = worley(2000.0 + 100.0 * 40.0, 2.0) + 0.05*fbm(vs_Pos.x + u_PlanePos.x, vs_Pos.z + u_PlanePos.y);\r\n  noise = mod(noise, 1.0);\r\n  if (noise < 0.25) {\r\n     return 2.0; // 2.0;\r\n  } else if (noise < 0.5) {\r\n    return 1.0;\r\n  } else if (noise < 0.75) {\r\n   return 3.0; //3.0;\r\n  } else {\r\n    return 4.0;\r\n  }\r\n}\r\n\r\nmat4 rotationMatrix(vec3 axis, float angle)\r\n{\r\n    axis = normalize(axis);\r\n    float s = sin(angle);\r\n    float c = cos(angle);\r\n    float oc = 1.0 - c;\r\n    \r\n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\r\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\r\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\r\n                0.0,                                0.0,                                0.0,                                1.0);\r\n}\r\n\r\n\r\nvoid main() {\r\n    fs_Col = vs_Col;\r\n    fs_Pos = vs_Pos;\r\n    fs_Nor = vs_Nor;\r\n\r\n    // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;\r\n \r\n     // place the fish relative to the terrain ground plane in model matrix (overallTransform)\r\n    //vec4 myPos = vs_Pos;\r\n     vec4 myPos = vec4(vs_Pos.x , vs_Pos.y, vs_Pos.z , 1.0);\r\n\r\n   \r\n   // (rand() % (max- min)) + min\r\n    //float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120\r\n    float a = 90.0 * (PI /180.0); // angle to rad conversion and repeat swivel angle\r\n    //           rotate on Y axis, angle in rads\r\n    mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);\r\n    mat4 rMat2 = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI /180.0));\r\n    mat4 rMat3 = rotationMatrix(vec3(0.0, 1.0, 0.0), 0.0);\r\n    mat4 rMatManta = rotationMatrix(vec3(0.0, 1.0, 0.0), 120.0 * (PI /180.0));\r\n    // apply individual transforms per instance\r\n\r\n    //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n    // change the model matrix to include the offset of the Key Press movements\r\n   mat4 overallTransforms;// = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n\r\n  //  vec4 modifiedPos = rMat * myPos;\r\n    vec4 modifiedPos;// = rMat * myPos;\r\n  float move = u_Time * 0.0005;//t * 100.0; //[0, 200]\r\n  float speed = abs(vs_Col.a) * 3.0 * 10.0;\r\n\r\n// manta\r\nif(vs_Col.a < 0.0 && vs_Col.a > -3.0){\r\n       modifiedPos = rMatManta * myPos;\r\n       modifiedPos.x += mod(move * speed, 50.0); // speed = 3\r\n       modifiedPos.z += mod(move * speed, 50.0);\r\n      // modifiedPos.y += (sin(u_Time * 0.0005 * (0.35/ 0.75))/ 2.0); // bob up and down\r\n       \r\n       overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, \r\n   vs_TransformC4 + vec4((vs_Pos.x -u_PlanePos.x)* 2.0, 0.0, (vs_Pos.z -u_PlanePos.y)*2.0, 1.0)); \r\n}\r\n// rudd fish\r\n else if(vs_Col.a <= 0.90 && vs_Col.a >= 0.0){// fish swimming to the right\r\n      modifiedPos = rMat3 * myPos;\r\n      modifiedPos.x -= mod(move * 290.0, 5000.0); // swim forward \r\n\r\n      overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n  }\r\n  else if(vs_Col.a > 1.0 && vs_Col.a < 3.0){ // swimming to the left, green one\r\n       modifiedPos = rMat2 * myPos;\r\n      modifiedPos.x += mod(move * 150.0, 2500.0); \r\n         overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n  }\r\n  else if(vs_Col.a >= 3.0){ // other rudd fish, swimming left slightly faster\r\n      modifiedPos = rMat2 * myPos;\r\n      modifiedPos.x += mod(move * 290.0, 4000.0); // swim forward \r\n         overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n  }\r\n  else{ // shark\r\n     modifiedPos = rMat * myPos;\r\n     modifiedPos.x -= mod(move * 20.0, 10000.0); // swim forward \r\n        overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);\r\n  }\r\n\r\n    //modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down\r\n    // modifiedPos.x -= mod(move * 20.0, 1000.0); // swim forward \r\n     mat4 flip = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI /180.0));\r\n\r\n\r\n    //  if(modifiedPos.x <= -50.0){\r\n    //    vec4 start = rMat * myPos;\r\n    //    modifiedPos.x =  start.x;\r\n    //  }\r\n  \r\n    //  if( mod(t, 2.0) <= 1.0 ){\r\n    //    modifiedPos = flip * modifiedPos;\r\n    //  }\r\n    \r\n   \r\n// working on doing a swim motion using sin curve\r\n    //vec4 offsetPos = modifiedPos + vec4(sin(float(u_Time * .0025f)), 0.0, 0.0, 0.0);\r\n    //modifiedPos *= offsetPos;\r\n\r\n    vec4 finalPos = overallTransforms * modifiedPos;\r\n   //vec4 finalPos = overallTransforms * offsetPos;\r\n    gl_Position = u_ViewProj * finalPos;\r\n}"
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\nprecision highp float;\r\n\r\nuniform vec3 u_Eye, u_Ref, u_Up;\r\nuniform vec2 u_Dimensions;\r\nuniform float u_Time;\r\n\r\nin vec4 fs_Col;\r\nin vec4 fs_Pos;\r\nin vec4 fs_Nor; // normals\r\nin float iD;\r\n\r\nout vec4 out_Col;\r\n\r\nvoid main()\r\n{\r\nvec3 n = fs_Nor.xyz;\r\n\r\nvec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);\r\n// h is the average of the view and light vectors\r\nvec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;\r\n// specular intensity\r\nfloat specularInt = max(pow(dot(normalize(h), normalize(n)), 23.0) , 0.0);  \r\n// dot between normals and light direction\r\nfloat diffuseTerm = dot(normalize(n), normalize(lightVector));  \r\n// Avoid negative lighting values\r\ndiffuseTerm = clamp(diffuseTerm, 0.0, 1.0);    \r\nfloat ambientTerm = 0.2;\r\nfloat lightIntensity = diffuseTerm + ambientTerm;\r\n//float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\r\n//out_Col = vec4(dist) * fs_Col;  \r\n//vec3(0.149, 0.4157, 0.7216);\r\n   float t = sin(u_Time * 0.0005) + 1.0; //[0,2]\r\nvec3 col;\r\n\r\n// manta\r\nif(fs_Col.a < 0.0){\r\ncol = fs_Col.xyz * lightIntensity;\r\n}\r\n else if(fs_Col.a > 0.7){\r\n col = fs_Col.xyz * lightIntensity;\r\n}\r\nelse{\r\n  col = fs_Col.xyz;  \r\n} \r\n  // vec3(0.1765, 0.1647, 0.502)\r\n\r\nout_Col = clamp(vec4(col , 1.0), 0.0, 1.0);\r\n\r\n//out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);\r\n\r\n\r\n//out_Col = vec4(fs_Col.xyz, 1.0);\r\n}"
 
 /***/ })
 /******/ ]);

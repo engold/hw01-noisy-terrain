@@ -65,21 +65,31 @@ void main() {
     float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle
     //           rotate on Y axis, angle in rads
     mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);
+    mat4 rMatCoral = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI/180.0));
     // apply individual transforms per instance
 
     //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
     // change the model matrix to include the offset of the Key Press movements
    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, 
    vs_TransformC4 + vec4((vs_Pos.x -u_PlanePos.x)* 2.0, 0.0, (vs_Pos.z -u_PlanePos.y)*2.0, 1.0));
-    vec4 modifiedPos = rMat * myPos;
+    vec4 modifiedPos;// = rMat * myPos;
+    vec4 offsetPos;
 
-
+if(vs_Col.a < 0.01){ // coral ID- no animation
+modifiedPos = rMatCoral* myPos;
+offsetPos = modifiedPos;
+}
+else{
+    modifiedPos = rMat * myPos;
+    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;
+    offsetPos = modifiedPos;
+    offsetPos.xz = modifiedPos.zx; // flip x and z
+}
 
 // sin curve on y axis??
-//vec4 offsetPos = vs_Pos + vec4(sin(vs_Pos.y + (u_Time * 0.00125))/ 2.0, 0.0, 0.0, 0.0); // curves but moves a little in x
- modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;
- vec4 offsetPos = modifiedPos;
- offsetPos.xz = modifiedPos.zx; // flip x and z
+//  modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;
+//  vec4 offsetPos = modifiedPos;
+//  offsetPos.xz = modifiedPos.zx; // flip x and z
 
 
     vec4 finalPos = overallTransforms * offsetPos;

@@ -67,9 +67,13 @@ void main() {
 //     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?
 
     // jellyfish motion - waves down body
-    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1 ;
+    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1;
     //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion
      modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); 
+
+     //swim
+    // modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down
+    //modifiedPos.x += (sin(u_Time * 0.005 * (vs_Col.a/ 0.95))/ 1.5); // forward and back
 
     vec4 finalPos = overallTransforms * modifiedPos;
     // vec4 finalPos = overallTransforms * vs_Pos;

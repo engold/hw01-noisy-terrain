@@ -221,7 +221,7 @@ void main() {
     modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down
     modifiedPos.x += (sin(u_Time * 0.005 * (vs_Col.a/ 0.95))/ 0.5); // forward and back
 
-/// swimming away
+/// swimming as a group
      float move = u_Time * 0.0005;
      modifiedPos.x += sin(move) * 5.0;//mod(move * 5.0, 1800.0);  
 

@@ -43,6 +43,8 @@ class ShaderProgram {
   unifTime: WebGLUniformLocation; // for u_Time
 
   unifEye:  WebGLUniformLocation;
+  // added for final
+  unifDimensions: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -68,6 +70,7 @@ class ShaderProgram {
     this.unifGlacierHeight   = gl.getUniformLocation(this.prog, "u_GlacierHeight"); // added for hw1
     this.unifTime   = gl.getUniformLocation(this.prog, "u_Time"); // added for hw1
     this.unifEye   = gl.getUniformLocation(this.prog, "u_Eye"); // 
+    this.unifDimensions   = gl.getUniformLocation(this.prog, "u_Dimensions"); //  i added this
       // Added for HW4
       this.attrTransformC1 = gl.getAttribLocation(this.prog, "vs_TransformC1");
       this.attrTransformC2 = gl.getAttribLocation(this.prog, "vs_TransformC2");
@@ -94,6 +97,13 @@ class ShaderProgram {
     // if(this.unifUp !== -1) {
     //   gl.uniform3f(this.unifUp, up[0], up[1], up[2]);
     // }
+  }
+
+  setDimensions(width: number, height: number) {
+    this.use();
+    if(this.unifDimensions !== -1) {
+      gl.uniform2f(this.unifDimensions, width, height);
+    }
   }
 
 

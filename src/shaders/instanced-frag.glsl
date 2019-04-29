@@ -31,31 +31,6 @@ float lightIntensity = diffuseTerm + ambientTerm;
 //out_Col = vec4(dist) * fs_Col;  
 //vec3(0.149, 0.4157, 0.7216);
 
-/*
-// This works, fish can know which biome they are in and change color
-  if (iD -1.0 <= 0.2) {
-    // sandy hills - done
-out_Col = clamp(vec4(vec3(1.0, 0.0, 0.0) * lightIntensity, 1.0), 0.0, 1.0);
-
-  } 
-  else if (iD -2.0 <= 0.2) {
-    // barren sand floor. Color changes to green: GOOD
-out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
-  } 
-  else if (iD -3.0 <= 0.2) {
-    // grassy floor
-out_Col = clamp(vec4(vec3(1.0, 1.0, 0.0)* lightIntensity, 1.0), 0.0, 1.0);
-  } 
-  else if (iD -4.0 <= 0.2) {
-    // sandbar rocks - done
-out_Col = clamp(vec4(vec3(1.0, 0.0, 1.0) * lightIntensity, 1.0), 0.0, 1.0);
-  }
-  // do nothing, draw fish offscreen?
-  else{
-      out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
-  }
-  */
-
 
 out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
 

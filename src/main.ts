@@ -36,6 +36,9 @@ let squareFishString: string = readTextFile('./src/geometry/squareFish_normals.o
 let swObj: string = readTextFile('./src/geometry/seaweed_moreVerts.obj'); //readTextFile('./src/geometry/seaweed.obj');
 let sharkString: string = readTextFile('./src/geometry/Shark.obj');
 let ruddString: string = readTextFile('./src/geometry/Rudd_Fish.obj');
+let coralBString: string = readTextFile('./src/geometry/finalCoralBottom2.obj');
+let coralTString: string = readTextFile('./src/geometry/finalCoralTop.obj');
+let mantaString: string = readTextFile('./src/geometry/manta.obj');
 
 let guiSpeed: number;
 let speed: number = 1.0;
@@ -57,6 +60,12 @@ let seaWeed4: Mesh;
 let seaWeed1: Mesh;
 let shark: Mesh;
 let rudd: Mesh;
+let coralBottom: Mesh;
+let coralTop: Mesh;
+let mantaRay: Mesh;
+let mantaRay2: Mesh;
+let mantasInTheBack: Mesh;
+let orangeFishSchool1: Mesh;
 
 function populateFormationlArray(textFilePath: string): any {
   let theString: string = readTextFile(textFilePath);
@@ -273,18 +282,18 @@ for(var i = 0; i < numInstances; i ++) {
   let col3: Float32Array = new Float32Array(col3Array);
   let col4: Float32Array = new Float32Array(col4Array);
   let colors: Float32Array = new Float32Array(colorsArray);
-  //console.log(col4Array);
+
   theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
   theMesh.setNumInstances(counter); 
 }
 
-function setJellyFieldVBOs(theMesh: Mesh,t :vec3, numInstances:number, offset: number){
+function setJellyFieldVBOs(theMesh: Mesh,t :vec3, numInstances:number, offset: number, h_offset:number){
   let colorsArray = []; 
   let col1Array = []; 
   let col2Array = []; 
   let col3Array = []; 
   let col4Array = [];  
-  let scale: number = (Math.random() * (12.0 - 1.0) + 1.0);
+  let scale: number = 12 + (Math.random() * (1.0 - 0.5) + 0.5);
   let counter:number = 0;
   let overallMat = mat4.create();
   let translateMat = mat4.create();
@@ -309,7 +318,7 @@ for(var i = 0; i < numInstances; i ++) {
    }
   mat4.fromScaling(scalelMat, vec3.fromValues(scale,scale,scale));
   mat4.fromTranslation(translateMat, vec3.fromValues(t[0] + temp * Math.random() * offset, // (tempZ*(tempX*0.75))
-                                                     t[1] + Math.random() ,
+                                                     t[1] + Math.random() * h_offset,
                                                      t[2] + temp2 * Math.random()* offset)
                                                      );
   mat4.multiply(overallMat, overallMat, scalelMat);
@@ -429,6 +438,192 @@ for(var i = 0; i < numInstances; i ++) {
   theMesh.setNumInstances(counter); 
 }
 
+//coral
+function setCoralVBOs(theMesh: Mesh, theOtherMesh:Mesh, t :vec3, numInstances:number, offset: number){
+  let colorsArray = []; 
+  let colorsArray_Bottom = [];
+  let col1Array = []; 
+  let col2Array = []; 
+  let col3Array = []; 
+  let col4Array = [];  
+  let col4ArrayBottom = [];   // for bottom
+  let scale: number = 24.0;
+  let counter:number = 0;
+  let overallMat = mat4.create();
+  let translateMat = mat4.create();
+  let translateMatBottom = mat4.create(); // for bottom rock piece
+  let overallMatBottom = mat4.create(); // for bottom
+  let scalelMat = mat4.create();
+  let temp: number = 1;
+  let temp2: number = 1;
+  let r1: number;
+  let r2: number;
+  let r3: number;
+
+
+for(var i = 0; i < numInstances; i ++) {  
+  //reset
+  overallMat = mat4.create();
+  translateMat = mat4.create();
+  translateMatBottom = mat4.create(); // for bottom
+  overallMatBottom = mat4.create(); // for bottom
+  scalelMat = mat4.create();
+ 
+  //  * (max - min) + min;
+  temp = Math.random() * (10.0 - 0.75) + 0.75;
+  temp2 = temp;
+  // for odd numbered
+  if( i%2 != 0.0){
+    temp *= -1;
+   }
+
+   r1 =  Math.random();
+   r2 =  Math.random() * (0.75 - 0.3) - 0.3;
+   r3 =  Math.random();
+
+  mat4.fromScaling(scalelMat, vec3.fromValues(scale,scale,scale));
+  mat4.fromTranslation(translateMat, vec3.fromValues(t[0] + temp * r1 * offset,
+                                                     t[1]+ 0.5 + r2, // offset the height from the base by 2
+                                                     t[2] + temp2 * r3* offset)
+                                                     );
+  mat4.multiply(overallMat, overallMat, scalelMat);
+  mat4.multiply(overallMat, overallMat, translateMat);                                                   
+ // for bottom
+  mat4.fromTranslation(translateMatBottom, vec3.fromValues(t[0] + temp * r1 * offset,
+                                                    t[1] + r2, // offset the height from the base by 2
+                                                     t[2] + temp2 * r3* offset)
+                                                     );
+  mat4.multiply(overallMatBottom, overallMatBottom, scalelMat);
+  mat4.multiply(overallMatBottom, overallMatBottom, translateMatBottom);
+
+// purple, getting overwritten in shader
+  colorsArray.push(1.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+  colorsArray.push(0.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // g
+  colorsArray.push(1.0 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+  colorsArray.push(0.0); // alpha, use as offset in shader
+
+  colorsArray_Bottom.push(0.8549); // for bottom array
+  colorsArray_Bottom.push(0.8078);
+  colorsArray_Bottom.push(0.5451);
+  colorsArray_Bottom.push(-1.0);
+  // transform column 1
+  col1Array.push(overallMat[0]);
+  col1Array.push(overallMat[1]);
+  col1Array.push(overallMat[2]);
+  col1Array.push(overallMat[3]);
+  // transform column 
+  col2Array.push(overallMat[4]);
+  col2Array.push(overallMat[5]);
+  col2Array.push(overallMat[6]);
+  col2Array.push(overallMat[7]);
+  // transform column 3
+  col3Array.push(overallMat[8]);
+  col3Array.push(overallMat[9]);
+  col3Array.push(overallMat[10]);
+  col3Array.push(overallMat[11]);
+  // transform column 4
+  col4Array.push(overallMat[12]); 
+  col4Array.push(overallMat[13]); 
+  col4Array.push(overallMat[14]);
+  col4Array.push(overallMat[15]); 
+
+  col4ArrayBottom.push(overallMatBottom[12]); 
+  col4ArrayBottom.push(overallMatBottom[13]); 
+  col4ArrayBottom.push(overallMatBottom[14]);
+  col4ArrayBottom.push(overallMatBottom[15]); 
+  
+  counter ++;
+}
+  let col1: Float32Array = new Float32Array(col1Array);
+  let col2: Float32Array = new Float32Array(col2Array);
+  let col3: Float32Array = new Float32Array(col3Array);
+  let col4: Float32Array = new Float32Array(col4Array);
+  let col4Bottom: Float32Array = new Float32Array(col4ArrayBottom);// for bottom
+  let colors: Float32Array = new Float32Array(colorsArray);
+  let colorsBottom: Float32Array = new Float32Array(colorsArray_Bottom);
+
+  theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+  theMesh.setNumInstances(counter); 
+  theOtherMesh.setInstanceVBOs(col1, col2, col3, col4Bottom, colorsBottom);
+  theOtherMesh.setNumInstances(counter); 
+}
+
+//MantaRays
+function setMantaRayVBOs(theMesh: Mesh,t :vec3, numInstances:number, offset: number){
+  let colorsArray = []; 
+  let col1Array = []; 
+  let col2Array = []; 
+  let col3Array = []; 
+  let col4Array = [];  
+  let scale: number = 13.0;
+  let counter:number = 0;
+  let overallMat = mat4.create();
+  let translateMat = mat4.create();
+  let scalelMat = mat4.create();
+  let temp: number = 1;
+  let temp2: number = 1;
+
+
+for(var i = 0; i < numInstances; i ++) {  
+  //reset
+  overallMat = mat4.create();
+  translateMat = mat4.create();
+  scalelMat = mat4.create();
+
+ 
+  //  * (max - min) + min;
+  temp = Math.random() * (10.0 - 0.75) + 0.75;
+  temp2 = temp;
+  // for odd numbered
+  if( i%2 != 0.0){
+    temp *= -1;
+   }
+  mat4.fromScaling(scalelMat, vec3.fromValues(scale,scale,scale));
+  mat4.fromTranslation(translateMat, vec3.fromValues(t[0] + temp * Math.random() * offset, // (tempZ*(tempX*0.75))
+                                                     t[1] + Math.random() ,
+                                                     t[2] + temp2 * Math.random()* offset)
+                                                     );
+  mat4.multiply(overallMat, overallMat, scalelMat);
+  mat4.multiply(overallMat, overallMat, translateMat);
+
+//  [0.4275, 0.3412, 0.3412, -1.0]
+  colorsArray.push(0.4275+ (Math.random() * (0.15 - 0.01) + 0.01)); // r value
+  colorsArray.push(0.3412+ (Math.random() * (0.15 - 0.01) + 0.01)); // g
+  colorsArray.push(0.3412 + (Math.random() * (0.15 - 0.01) + 0.01)); // b
+  colorsArray.push(-1.0  * (0.1 + (i % 30.0) / 31.0)); // id for shader
+  // transform column 1
+  col1Array.push(overallMat[0]);
+  col1Array.push(overallMat[1]);
+  col1Array.push(overallMat[2]);
+  col1Array.push(overallMat[3]);
+  // transform column 
+  col2Array.push(overallMat[4]);
+  col2Array.push(overallMat[5]);
+  col2Array.push(overallMat[6]);
+  col2Array.push(overallMat[7]);
+  // transform column 3
+  col3Array.push(overallMat[8]);
+  col3Array.push(overallMat[9]);
+  col3Array.push(overallMat[10]);
+  col3Array.push(overallMat[11]);
+  // transform column 4
+  col4Array.push(overallMat[12]); 
+  col4Array.push(overallMat[13]); // random val between 0 and 1 to offset height
+  col4Array.push(overallMat[14]);
+  col4Array.push(overallMat[15]); 
+  
+  counter ++;
+}
+  let col1: Float32Array = new Float32Array(col1Array);
+  let col2: Float32Array = new Float32Array(col2Array);
+  let col3: Float32Array = new Float32Array(col3Array);
+  let col4: Float32Array = new Float32Array(col4Array);
+  let colors: Float32Array = new Float32Array(colorsArray);
+
+  theMesh.setInstanceVBOs(col1, col2, col3, col4, colors);
+  theMesh.setNumInstances(counter); 
+}
+
 let formationArray: any = [];
 let formationArray2: any = [];
 
@@ -436,7 +631,7 @@ function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
 
-let jellyString: string = readTextFile('./src/geometry/jellyFish_normals.obj')
+let jellyString: string = readTextFile('./src/geometry/jellyFish.obj');
 jellyMesh = new Mesh(jellyString, vec3.fromValues(0.0, 2.0, 0.0));
 jellyMesh.create(); 
 
@@ -456,6 +651,10 @@ jellyMesh.create();
  goldfish.create(); 
  setFishVBOs(goldfish, formationArray, vec3.fromValues(-40, 6, 90));
  goldfish.setNumInstances(30);
+ //more orange fish for the coral area
+ orangeFishSchool1 = new Mesh(obj0, vec3.fromValues(0.0, 2.0, 0.0));
+ orangeFishSchool1.create(); 
+ setFishVBOs(orangeFishSchool1, formationArray, vec3.fromValues(10.0, 8.0, 620));
 
  // a school of yellow fish
  squareFish = new Mesh(squareFishString, vec3.fromValues(0.0, 2.0, 0.0));
@@ -482,7 +681,8 @@ jellyMesh.create();
  setSeaWeedVBOs(seaWeed2, vec3.fromValues(-3.5, 0.0, 35.0), 1000, 7);
  setSeaWeedVBOs(seaWeed3, vec3.fromValues(2.0, 0.0, 5.0), 300, 5.0);
  setSeaWeedVBOs(seaWeed4, vec3.fromValues(0.0, 0.0, 240.0), 800, 5.0); // for the grassy area
- setSeaWeedVBOs(seaWeed1, vec3.fromValues(0.0, 0.0, -20.0), 600, 6.0); // closest to the camera on start
+ setSeaWeedVBOs(seaWeed1, vec3.fromValues(0.0, 0.0, -20.0), 1200, 16.0); // closest to the camera on start
+ //setSeaWeedVBOs(seaWeed1, vec3.fromValues(0.0, 0.0, -20.0), 600, 6.0); // closest to the camera on start
 
  // jelly fish model
  setJellyVBOs(jellyMesh, vec3.fromValues(5, 6, 230), 3);
@@ -490,12 +690,12 @@ jellyMesh.create();
 // a bunch of jelly fish
 jellyField = new Mesh(jellyString, vec3.fromValues(0.0, 2.0, 0.0));
 jellyField.create(); 
-setJellyFieldVBOs(jellyField, vec3.fromValues(2.0, 7.0, 215.0), 85, 9.0);
+setJellyFieldVBOs(jellyField, vec3.fromValues(2.0, 5.0, 130.0), 85, 15.0, 2.0);
 
  
  //shark
  let scale: number = 2.75;
- let colorsList: number[] = [0.0627,  0.051,   0.2471, 1.0]; //vec3(0.0627, 0.051, 0.2471)
+ let colorsList: number[] = [0.0627,  0.051,   0.2471, -10.0]; //vec3(0.0627, 0.051, 0.2471)
  let c1Array: number[] = [scale, 0.0, 0.0, 0.0];
  let c2Array: number[] = [0.0, scale, 0.0, 0.0];
  let c3Array: number[] = [0.0, 0.0, scale, 0.0];
@@ -511,6 +711,20 @@ setJellyFieldVBOs(jellyField, vec3.fromValues(2.0, 7.0, 215.0), 85, 9.0);
  shark.setInstanceVBOs(col1Array, col2Array, col3Array, col4Array, colorArray);
  shark.setNumInstances(1);
 
+// manta rays
+mantaRay = new Mesh(mantaString, vec3.fromValues(0.0, 0.0, 0.0));
+mantaRay.create();
+mantaRay2 = new Mesh(mantaString, vec3.fromValues(0.0, 0.0, 0.0));
+mantaRay2.create();
+mantasInTheBack = new Mesh(mantaString, vec3.fromValues(0.0, 0.0, 0.0));
+mantasInTheBack.create();
+
+ setMantaRayVBOs(mantaRay, vec3.fromValues(40, 1.2, 110), 10, 3.5);
+ setMantaRayVBOs(mantaRay2, vec3.fromValues(-25, 1.2, 110), 10, 3.5);
+ setMantaRayVBOs(mantasInTheBack, vec3.fromValues(-25, 1.2, 500), 300, 30.5);
+
+
+ // 3 rudd fish that go across screen
  rudd = new Mesh(ruddString, vec3.fromValues(0.0, 0.0, 0.0));
  rudd.create();
  let scale2: number = 0.20;
@@ -531,7 +745,11 @@ setJellyFieldVBOs(jellyField, vec3.fromValues(2.0, 7.0, 215.0), 85, 9.0);
  rudd.setInstanceVBOs(col1ArrayRudd, col2ArrayRudd, col3ArrayRudd, col4ArrayRudd, colorArrayRudd);
  rudd.setNumInstances(3);
 
-
+ coralBottom = new Mesh(coralBString, vec3.fromValues(0.0, 0.0, 0.0));
+ coralBottom.create();
+ coralTop = new Mesh(coralTString, vec3.fromValues(0.0, 0.0, 0.0));
+ coralTop.create();
+ setCoralVBOs(coralTop, coralBottom, vec3.fromValues(0.0, 0.0, 200.0), 60 , 14.0);
 
   //                                                        100,100
   plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(600,300), 20);
@@ -666,6 +884,7 @@ function main() {
     instance.setPlanePos(newPos);
     instanceJellyShader.setPlanePos(newPos);
     instancePlants.setPlanePos(newPos);
+    screenSpaceShader.setPlanePos(newPos);
     //---------------------------
     planePos = newPos;
 
@@ -709,6 +928,9 @@ function main() {
       renderer.render(camera, screenSpaceShader, 1.0, [
         shark,
         rudd,
+        mantaRay,
+        mantaRay2,
+        mantasInTheBack
         ]);
     // draw small fish
     renderer.render(camera, instance, 1.0, [
@@ -717,6 +939,7 @@ function main() {
       goldfish, // tiny orange school of fish #2
       squareFish, // the square fish
       squareFish2,
+      orangeFishSchool1,
     ]);
     // draw jellyfish
     renderer.render(camera, instanceJellyShader, 1.0, [
@@ -731,10 +954,11 @@ function main() {
       seaWeed1,
       seaWeed2,
       seaWeed3, 
-      seaWeed4,
-   
+      seaWeed4, 
+      coralBottom,
+      coralTop ,
      ]);
-   
+    
 
     stats.end();
 
@@ -746,11 +970,15 @@ function main() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.setAspectRatio(window.innerWidth / window.innerHeight);
     camera.updateProjectionMatrix();
+    // set dimensions for u_Dimensions in shader, I added this
+    instancePlants.setDimensions(window.innerWidth, window.innerHeight);
   }, false);
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.setAspectRatio(window.innerWidth / window.innerHeight);
   camera.updateProjectionMatrix();
+  // set dimensions for u_Dimensions in shader, i added this
+  instancePlants.setDimensions(window.innerWidth, window.innerHeight);
 
   // Start the render loop
   tick();

@@ -211,34 +211,49 @@ void main() {
     mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);
     mat4 rMat2 = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI /180.0));
     mat4 rMat3 = rotationMatrix(vec3(0.0, 1.0, 0.0), 0.0);
+    mat4 rMatManta = rotationMatrix(vec3(0.0, 1.0, 0.0), 120.0 * (PI /180.0));
     // apply individual transforms per instance
 
     //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
     // change the model matrix to include the offset of the Key Press movements
-   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
+   mat4 overallTransforms;// = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
 
   //  vec4 modifiedPos = rMat * myPos;
     vec4 modifiedPos;// = rMat * myPos;
-
-  //float t = sin(u_Time * 0.0005) - 1.0; //[-1, 1] -> [0,2]
   float move = u_Time * 0.0005;//t * 100.0; //[0, 200]
+  float speed = abs(vs_Col.a) * 3.0 * 10.0;
 
+// manta
+if(vs_Col.a < 0.0 && vs_Col.a > -3.0){
+       modifiedPos = rMatManta * myPos;
+       modifiedPos.x += mod(move * speed, 50.0); // speed = 3
+       modifiedPos.z += mod(move * speed, 50.0);
+      // modifiedPos.y += (sin(u_Time * 0.0005 * (0.35/ 0.75))/ 2.0); // bob up and down
+       
+       overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, 
+   vs_TransformC4 + vec4((vs_Pos.x -u_PlanePos.x)* 2.0, 0.0, (vs_Pos.z -u_PlanePos.y)*2.0, 1.0)); 
+}
 // rudd fish
- if(vs_Col.a <= 0.90){// fish swimming to the right
+ else if(vs_Col.a <= 0.90 && vs_Col.a >= 0.0){// fish swimming to the right
       modifiedPos = rMat3 * myPos;
       modifiedPos.x -= mod(move * 290.0, 5000.0); // swim forward 
+
+      overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
   }
   else if(vs_Col.a > 1.0 && vs_Col.a < 3.0){ // swimming to the left, green one
        modifiedPos = rMat2 * myPos;
       modifiedPos.x += mod(move * 150.0, 2500.0); 
+         overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
   }
   else if(vs_Col.a >= 3.0){ // other rudd fish, swimming left slightly faster
       modifiedPos = rMat2 * myPos;
       modifiedPos.x += mod(move * 290.0, 4000.0); // swim forward 
+         overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
   }
   else{ // shark
      modifiedPos = rMat * myPos;
      modifiedPos.x -= mod(move * 20.0, 10000.0); // swim forward 
+        overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
   }
 
     //modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down

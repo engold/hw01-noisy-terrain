@@ -33,7 +33,11 @@ float lightIntensity = diffuseTerm + ambientTerm;
    float t = sin(u_Time * 0.0005) + 1.0; //[0,2]
 vec3 col;
 
-if(fs_Col.a > 0.7){
+// manta
+if(fs_Col.a < 0.0){
+col = fs_Col.xyz * lightIntensity;
+}
+ else if(fs_Col.a > 0.7){
  col = fs_Col.xyz * lightIntensity;
 }
 else{
