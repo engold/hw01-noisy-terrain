@@ -8,6 +8,7 @@ uniform float u_Time;
 in vec4 fs_Col;
 in vec4 fs_Pos;
 in vec4 fs_Nor; // normals
+in float iD;
 
 out vec4 out_Col;
 
@@ -15,7 +16,7 @@ void main()
 {
 vec3 n = fs_Nor.xyz;
 
-vec3 lightVector =  vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;
+vec3 lightVector = vec3(5.0, 5.0, 5.0) + fs_Pos.xyz;//u_Eye;//vec3(0.4784, 0.3176, 0.1294);//normalize(u_Eye - p);
 // h is the average of the view and light vectors
 vec3 h = (vec3(0.0, 0.0, 1.0) + lightVector) / 2.0;
 // specular intensity
@@ -29,12 +30,20 @@ float lightIntensity = diffuseTerm + ambientTerm;
 //float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);
 //out_Col = vec4(dist) * fs_Col;  
 //vec3(0.149, 0.4157, 0.7216);
+   float t = sin(u_Time * 0.0005) + 1.0; //[0,2]
+vec3 col;
 
-// output color passed in
+if(fs_Col.a > 0.7){
+ col = fs_Col.xyz * lightIntensity;
+}
+else{
+  col = fs_Col.xyz;  
+} 
+  // vec3(0.1765, 0.1647, 0.502)
+
+out_Col = clamp(vec4(col , 1.0), 0.0, 1.0);
+
 //out_Col = clamp(vec4(fs_Col.xyz * lightIntensity, 1.0), 0.0, 1.0);
-vec3 col = vec3(0.8314, 0.1647, 1.0);
-
-out_Col = vec4(clamp(fs_Col.xyz * lightIntensity, 0.0, 1.0), 1.0);
 
 
 //out_Col = vec4(fs_Col.xyz, 1.0);

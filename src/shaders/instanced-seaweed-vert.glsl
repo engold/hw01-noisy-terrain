@@ -23,6 +23,16 @@ const float PI = 3.14159265359;
 out vec4 fs_Col;
 out vec4 fs_Pos;
 out vec4 fs_Nor; // normals
+out float iD;
+
+
+
+
+float rand1D(int x) {
+  x = (x << 13) ^ x;
+  return (1.0 - ( float(x) * ( float(x) * float(x) * 15731.0 + 789221.0) + 1376312589.0)) / 10737741824.0;
+}
+
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -37,41 +47,41 @@ mat4 rotationMatrix(vec3 axis, float angle)
                 0.0,                                0.0,                                0.0,                                1.0);
 }
 
+
 void main() {
     fs_Col = vs_Col;
     fs_Pos = vs_Pos;
     fs_Nor = vs_Nor;
-    // vec3 offset = vs_Translate;
+
     // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;
-    // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];
-    // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);
+ 
+     // place the fish relative to the terrain ground plane in model matrix (overallTransform)
+    //vec4 myPos = vs_Pos;
+     vec4 myPos = vec4(vs_Pos.x , vs_Pos.y, vs_Pos.z , 1.0);
 
-
-    float a = 110.0 * PI /180.0; // angle to rad conversion
+   
+   // (rand() % (max- min)) + min
+    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120
+    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle
     //           rotate on Y axis, angle in rads
     mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);
     // apply individual transforms per instance
+
+    //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
+    // change the model matrix to include the offset of the Key Press movements
    mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, 
-   vs_TransformC4 + vec4(-u_PlanePos.x, 0.0, -u_PlanePos.y, 1.0));
-    vec4 modifiedPos = rMat * vs_Pos;
+   vs_TransformC4 + vec4((vs_Pos.x -u_PlanePos.x)* 2.0, 0.0, (vs_Pos.z -u_PlanePos.y)*2.0, 1.0));
+    vec4 modifiedPos = rMat * myPos;
 
-    //modifiedPos.y += (sin(u_Time * 0.005)/ 2.0); // bob up and down
-    float t = sin(u_Time * 0.0005);
-    float offset = 0.5 * sin(vs_Pos.y * 2.0 + float(u_Time*0.025)) + 0.5;
-    
-//    float dist = distance(vs_Pos.xyz, vec3(0.0,0.0,0.0));
-//    //Adjust our distance to be non-linear.
-//     dist = pow(dist,4.0);
-//     //Set the max amount a wave can be distorted based on distance.
-//     dist = max(dist, 1.0);
-//     modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.x *0.4 + (u_Time* 0.005)) * 0.5 * (1.0 / dist); // looks like breathing motion?
 
-    // jellyfish motion - waves down body
-    modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + u_Time*0.005) * 0.1 ;
-    //modifiedPos.y += clamp(sin(u_Time * 0.005)*2.0, 0.0, 2.0); // for a jumpy motion
-     modifiedPos.y += (sin(u_Time * 0.0009)/ 1.35); 
 
-    vec4 finalPos = overallTransforms * modifiedPos;
-    // vec4 finalPos = overallTransforms * vs_Pos;
+// sin curve on y axis??
+//vec4 offsetPos = vs_Pos + vec4(sin(vs_Pos.y + (u_Time * 0.00125))/ 2.0, 0.0, 0.0, 0.0); // curves but moves a little in x
+ modifiedPos.xyz += vs_Nor.xyz * sin(modifiedPos.y* 10.0 + (u_Time*0.0025) + vs_Col.a) * 0.1 ;
+ vec4 offsetPos = modifiedPos;
+ offsetPos.xz = modifiedPos.zx; // flip x and z
+
+
+    vec4 finalPos = overallTransforms * offsetPos;
     gl_Position = u_ViewProj * finalPos;
 }

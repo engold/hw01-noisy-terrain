@@ -173,7 +173,7 @@ float getBiome() {
 void main()
 {
   float height = fbm((vs_Pos.x + u_PlanePos.x) / 24.0, (vs_Pos.z + u_PlanePos.y) / 24.0); 
-  float noiseTerm = fbm((vs_Pos.x + u_PlanePos.x + worley(50.f,8.0)) / 8.0, (vs_Pos.z + u_PlanePos.y + worley(50.f,8.0)) / 8.0);
+  float noiseTerm = fbm((vs_Pos.x + u_PlanePos.x + worley(50.0,8.0)) / 8.0, (vs_Pos.z + u_PlanePos.y + worley(50.0,8.0)) / 8.0);
   fs_Pos = vs_Pos.xyz;
   vec4 modelposition = vec4(1.0);
   float n = 0.0;

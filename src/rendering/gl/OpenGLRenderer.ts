@@ -33,6 +33,9 @@ class OpenGLRenderer {
     prog.setModelMatrix(model);
     prog.setViewProjMatrix(viewProj);
 
+    //for u_Eye
+    prog.setEyeRefUp(camera.controls.eye);
+
     // add for hw1
     prog.setHeightVar(height);
 

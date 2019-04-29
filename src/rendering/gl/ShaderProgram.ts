@@ -1,4 +1,4 @@
-import {vec2, vec4, mat4} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
 
@@ -42,6 +42,8 @@ class ShaderProgram {
   unifGlacierHeight: WebGLUniformLocation;// added for hw1
   unifTime: WebGLUniformLocation; // for u_Time
 
+  unifEye:  WebGLUniformLocation;
+
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
 
@@ -65,6 +67,7 @@ class ShaderProgram {
     this.unifHeightVar   = gl.getUniformLocation(this.prog, "u_HeightVar"); // added for hw1
     this.unifGlacierHeight   = gl.getUniformLocation(this.prog, "u_GlacierHeight"); // added for hw1
     this.unifTime   = gl.getUniformLocation(this.prog, "u_Time"); // added for hw1
+    this.unifEye   = gl.getUniformLocation(this.prog, "u_Eye"); // 
       // Added for HW4
       this.attrTransformC1 = gl.getAttribLocation(this.prog, "vs_TransformC1");
       this.attrTransformC2 = gl.getAttribLocation(this.prog, "vs_TransformC2");
@@ -78,6 +81,21 @@ class ShaderProgram {
       activeProgram = this.prog;
     }
   }
+
+  // for u_Eye
+  setEyeRefUp(eye: vec3/*, ref: vec3, up: vec3*/) {
+    this.use();
+    if(this.unifEye !== -1) {
+      gl.uniform3f(this.unifEye, eye[0], eye[1], eye[2]);
+    }
+    // if(this.unifRef !== -1) {
+    //   gl.uniform3f(this.unifRef, ref[0], ref[1], ref[2]);
+    // }
+    // if(this.unifUp !== -1) {
+    //   gl.uniform3f(this.unifUp, up[0], up[1], up[2]);
+    // }
+  }
+
 
 //for hw1
 setHeightVar(height: number){

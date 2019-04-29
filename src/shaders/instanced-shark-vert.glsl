@@ -205,28 +205,57 @@ void main() {
 
    
    // (rand() % (max- min)) + min
-    float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120
-    float a = temp * (PI /180.0) * sin(u_Time* 0.005 * vs_Col.a)/ 5.05; // angle to rad conversion and repeat swivel angle
+    //float temp = mod( rand1D(45 ), 120.0-90.0) + 90.0; // get a rand value between 90 and 120
+    float a = 90.0 * (PI /180.0); // angle to rad conversion and repeat swivel angle
     //           rotate on Y axis, angle in rads
     mat4 rMat = rotationMatrix(vec3(0.0, 1.0, 0.0), a);
+    mat4 rMat2 = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI /180.0));
+    mat4 rMat3 = rotationMatrix(vec3(0.0, 1.0, 0.0), 0.0);
     // apply individual transforms per instance
 
     //mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
     // change the model matrix to include the offset of the Key Press movements
-   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, 
-   vs_TransformC4 + vec4(-u_PlanePos.x, 0.0, -u_PlanePos.y, 1.0));
-   // vec4 modifiedPos = rMat * vs_Pos;
-    vec4 modifiedPos = rMat * myPos;
+   mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
 
-    modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down
-    modifiedPos.x += (sin(u_Time * 0.005 * (vs_Col.a/ 0.95))/ 0.5); // forward and back
+  //  vec4 modifiedPos = rMat * myPos;
+    vec4 modifiedPos;// = rMat * myPos;
 
-/// swimming away
-     float move = u_Time * 0.0005;
-     modifiedPos.x += sin(move) * 5.0;//mod(move * 5.0, 1800.0);  
+  //float t = sin(u_Time * 0.0005) - 1.0; //[-1, 1] -> [0,2]
+  float move = u_Time * 0.0005;//t * 100.0; //[0, 200]
+
+// rudd fish
+ if(vs_Col.a <= 0.90){// fish swimming to the right
+      modifiedPos = rMat3 * myPos;
+      modifiedPos.x -= mod(move * 290.0, 5000.0); // swim forward 
+  }
+  else if(vs_Col.a > 1.0 && vs_Col.a < 3.0){ // swimming to the left, green one
+       modifiedPos = rMat2 * myPos;
+      modifiedPos.x += mod(move * 150.0, 2500.0); 
+  }
+  else if(vs_Col.a >= 3.0){ // other rudd fish, swimming left slightly faster
+      modifiedPos = rMat2 * myPos;
+      modifiedPos.x += mod(move * 290.0, 4000.0); // swim forward 
+  }
+  else{ // shark
+     modifiedPos = rMat * myPos;
+     modifiedPos.x -= mod(move * 20.0, 10000.0); // swim forward 
+  }
+
+    //modifiedPos.y += (sin(u_Time * 0.005 * (vs_Col.a/ 0.75))/ 2.0); // bob up and down
+    // modifiedPos.x -= mod(move * 20.0, 1000.0); // swim forward 
+     mat4 flip = rotationMatrix(vec3(0.0, 1.0, 0.0), 180.0 * (PI /180.0));
 
 
-
+    //  if(modifiedPos.x <= -50.0){
+    //    vec4 start = rMat * myPos;
+    //    modifiedPos.x =  start.x;
+    //  }
+  
+    //  if( mod(t, 2.0) <= 1.0 ){
+    //    modifiedPos = flip * modifiedPos;
+    //  }
+    
+   
 // working on doing a swim motion using sin curve
     //vec4 offsetPos = modifiedPos + vec4(sin(float(u_Time * .0025f)), 0.0, 0.0, 0.0);
     //modifiedPos *= offsetPos;
