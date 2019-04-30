@@ -6,6 +6,7 @@ pennKey: engold
 ![](p8.png)
 
 You need to zoom out intially because it starts too zoomed in.
+
 Link: https://engold.github.io/hw01-noisy-terrain
 
 ## References
@@ -69,9 +70,10 @@ Link: https://engold.github.io/hw01-noisy-terrain
 - When passing VBO data, I used the alpha channel of the color vector to pass along extra information on a per instance basis.
     + In the shader for the schools of fish, I used the alpha channel value as an offset so each individual instance could have its own unique rotation and speed for the movements.
     + In the shader for the background silhouette fish, I used the alpha channel as as ID for which type of creature was currently being drawn, so the shark and rudd fish could have different speeds and directions despite being drawn by the same shader.
+- For all of the geometry being drawn I had to add the opposite of u_PlanePos in the x and z directions, to get the geometry to move accordingly whenever a WASD key was pressed and the terrain was moved. This update needs to be made in the model matrix, otherwise the geometry will move with the camera and it won't feel as though it is actually in the enviornment.
 - The ocean background is done using a flat shader on a screenquad. There is a blue gradient in the y direction, where the blue is darker the lower it is and lighter the higher it is, to mimic how oceans are darker the deeper they are, and lighter towards the surface.
 
-##For the Future
+## For the Future
 - Right now, fish and plants are not as procedurally placed as they could be. I deliberatley placed each type of fish and plant where I wanted them to be. Something to work on for the future would be making fish/plants spawn on their own depending on the camera/player's current location. 
     + Right now, if you stray to far from the original 4 biomes lined up in Z direction, fish and plants will start to disappear.
 
