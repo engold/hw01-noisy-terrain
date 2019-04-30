@@ -249,6 +249,8 @@ if(vs_Col.a < 0.0 && vs_Col.a > -3.0){
       modifiedPos = rMat2 * myPos;
       modifiedPos.x += mod(move * 290.0, 4000.0); // swim forward 
          overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
+
+         
   }
   else{ // shark
      modifiedPos = rMat * myPos;

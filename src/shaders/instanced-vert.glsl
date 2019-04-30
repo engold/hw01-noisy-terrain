@@ -226,10 +226,11 @@ void main() {
      modifiedPos.x += sin(move) * 5.0;//mod(move * 5.0, 1800.0);  
 
 
+     // sin curve passing through fish body. wiggle
+     vec4 blah = vs_Pos + vec4(0.0 ,0.0,  cos(vs_Pos.y * 3.0 + (u_Time*0.015))*cos(vs_Pos.x* 3.0 + (u_Time*0.015)), 0.0 );
+     float off = 0.025 * sin(fs_Pos.y * 1.5 + (u_Time*0.0125)) + 0.75;
+     modifiedPos = mix(blah, modifiedPos, off );
 
-// working on doing a swim motion using sin curve
-    //vec4 offsetPos = modifiedPos + vec4(sin(float(u_Time * .0025f)), 0.0, 0.0, 0.0);
-    //modifiedPos *= offsetPos;
 
     vec4 finalPos = overallTransforms * modifiedPos;
    //vec4 finalPos = overallTransforms * offsetPos;
